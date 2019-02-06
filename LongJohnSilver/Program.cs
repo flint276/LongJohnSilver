@@ -22,6 +22,7 @@ namespace LongJohnSilver
         private DiscordSocketClient _client;
         private CommandService _commands;
         private IServiceProvider _services;
+        private DiscordSocketConfig _config;
 
         private static System.Timers.Timer _botTimer;
 
@@ -36,6 +37,13 @@ namespace LongJohnSilver
                 .AddSingleton(_client)
                 .AddSingleton(_commands)
                 .BuildServiceProvider();
+
+            _config = new DiscordSocketConfig()
+            {
+                AlwaysDownloadUsers = true
+            };
+
+
 
             var botToken = "";
 

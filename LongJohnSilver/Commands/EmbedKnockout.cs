@@ -17,9 +17,6 @@ namespace LongJohnSilver.Commands
         [Command("showknockout")]
         public async Task EmbedKnockoutAsync()
         {
-#pragma warning disable 4014
-            Context.Guild.DownloadUsersAsync();
-#pragma warning restore 4014
 
             if (Context.IsPrivate)
             {

@@ -97,6 +97,7 @@ namespace LongJohnSilver.Embeds
                         }
 
                         PlayersReadyString += context.Guild.GetUser(playerId).Username;
+
                         if (knockoutData.PlayerWentLastTime(playerId) || knockoutData.TurnsLeftForPlayer(playerId) == 0)
                         {
                             PlayersReadyString += "~~";
