@@ -30,18 +30,20 @@ namespace LongJohnSilver
 
         public async Task RunBotAsync()
         {
-            _client = new DiscordSocketClient();
-            _commands = new CommandService();
-
-            _services = new ServiceCollection()
-                .AddSingleton(_client)
-                .AddSingleton(_commands)
-                .BuildServiceProvider();
-
             _config = new DiscordSocketConfig()
             {
                 AlwaysDownloadUsers = true
             };
+
+            _client = new DiscordSocketClient(_config);
+            _commands = new CommandService();
+
+            _services = new ServiceCollection()
+                .AddSingleton(_client)
+                .AddSingleton(_commands)                
+                .BuildServiceProvider();
+
+
 
 
 
@@ -87,7 +89,7 @@ namespace LongJohnSilver
 
             await RegisterCommandsAsync();
 
-            await _client.LoginAsync(Discord.TokenType.Bot, botToken);
+            await _client.LoginAsync(Discord.TokenType.Bot, botToken);            
 
             await _client.SetGameAsync("type !help for... help, obv");
 
