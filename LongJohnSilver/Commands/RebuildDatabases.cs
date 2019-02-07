@@ -18,6 +18,11 @@ namespace LongJohnSilver.Commands
         [Command("rebuild")]
         public async Task RebuildDatabasesAsync()
         {
+            if (!ChannelCheck.IsKnockoutChannel(Context))
+            {
+                return;
+            }
+
             SocketGuildUser CurrentUser = Context.User as SocketGuildUser;
             if (!(CurrentUser.GuildPermissions.KickMembers))
             {

@@ -14,6 +14,10 @@ namespace LongJohnSilver.Commands
         [Command("vote")]
         public async Task PlayAsync([Remainder]string input = "")
         {
+            if (!ChannelCheck.IsKnockoutChannel(Context))
+            {
+                return;
+            }
 
             if (Context.IsPrivate)
             {

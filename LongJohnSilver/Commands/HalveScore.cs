@@ -19,6 +19,11 @@ namespace LongJohnSilver.Commands
         [Command ("snap")]
         public async Task HalveAsync()
         {
+            if (!ChannelCheck.IsKnockoutChannel(Context))
+            {
+                return;
+            }
+
             SocketGuildUser CurrentUser = Context.User as SocketGuildUser;
             if (!(CurrentUser.GuildPermissions.KickMembers))
             {

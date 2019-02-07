@@ -12,7 +12,7 @@ namespace LongJohnSilver.Commands
         {
             if (!Context.IsPrivate)
             {
-                await Context.Channel.SendMessageAsync(":x: Command Only for Knockout Creation and only for use in PM with Bot!");
+                //await Context.Channel.SendMessageAsync(":x: Command Only for Knockout Creation and only for use in PM with Bot!");
                 return;
             }
 

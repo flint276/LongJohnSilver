@@ -15,9 +15,15 @@ namespace LongJohnSilver.Commands
 {
     public class NewDay : ModuleBase<SocketCommandContext>
     {
+        // ReSharper disable once StringLiteralTypo
         [Command("newday")]
         public async Task NewDayAsync()
         {
+            if (!ChannelCheck.IsKnockoutChannel(Context))
+            {
+                return;
+            }
+
             SocketGuildUser CurrentUser = Context.User as SocketGuildUser;
             if (!(CurrentUser.GuildPermissions.KickMembers))
             {

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using LongJohnSilver.Statics;
 
 namespace LongJohnSilver.Commands
 {
@@ -12,6 +13,11 @@ namespace LongJohnSilver.Commands
         [Command("help")]
         public async Task HelpAsync()
         {
+            if (!ChannelCheck.IsKnockoutChannel(Context))
+            {
+                return;
+            }
+
             await Context.Channel.SendMessageAsync("To create a knockout, please type **!createknockout** and follow the instructions in PM.\n" +
                 "Please don't forget to type **!quit** in PM if you change your mind, this frees up the bot for someone else!\n" +
                 "To play, when a vote is in progress, simply type **!vote Option To Vote Up/Option to Vote Down**\n" +

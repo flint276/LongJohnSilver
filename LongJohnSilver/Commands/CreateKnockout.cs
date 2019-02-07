@@ -15,10 +15,14 @@ namespace LongJohnSilver.Commands
         [Command("createknockout")]
         public async Task AddKnockoutAsync()
         {
+            if (!ChannelCheck.IsKnockoutChannel(Context))
+            {
+                return;
+            }
 
             if (Context.IsPrivate)
             {
-                await Context.Channel.SendMessageAsync("Please use this command in the knockout channel!");
+                //await Context.Channel.SendMessageAsync("Please use this command in the knockout channel!");
                 return;
             }
 

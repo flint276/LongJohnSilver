@@ -17,6 +17,10 @@ namespace LongJohnSilver.Commands
         [Command("showknockout")]
         public async Task EmbedKnockoutAsync()
         {
+            if (!ChannelCheck.IsKnockoutChannel(Context))
+            {
+                return;
+            }
 
             if (Context.IsPrivate)
             {

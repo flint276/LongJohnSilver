@@ -1,48 +1,45 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
-using Discord.WebSocket;
 using LongJohnSilver.Database;
 
 namespace LongJohnSilver.Embeds
 {
-    static public class BotEmbeds
+    public static class BotEmbeds
     {
-        private static IMessage lastShowKnockoutSent;
+        private static IMessage _lastShowKnockoutSent;
 
         // Public Display Methods
 
         public static async Task ShowKnockout(SocketCommandContext context, KnockOutHandler knockoutData)
         {
-            await ShowKnockout(context, context.Channel as IMessageChannel, knockoutData);
+            await ShowKnockout(context, context.Channel, knockoutData);
         }
 
         public static async Task ShowKnockout(SocketCommandContext context, IMessageChannel channel, KnockOutHandler knockoutData)
         {
-            Data_ShowKnockout.Construct(context, knockoutData);
+            DataShowKnockout.Construct(context, knockoutData);
 
             var knockoutEmbed = EmbedBuilder_ShowKnockout();
 
-            if (lastShowKnockoutSent != null)
+            if (_lastShowKnockoutSent != null)
             {
-                await lastShowKnockoutSent.DeleteAsync();
+                await _lastShowKnockoutSent.DeleteAsync();
             }
 
-            lastShowKnockoutSent = await channel.SendMessageAsync("", false, knockoutEmbed);
+            _lastShowKnockoutSent = await channel.SendMessageAsync("", false, knockoutEmbed);
         }
 
         public static async Task DraftBeingCreated(SocketCommandContext context, KnockOutHandler knockoutData)
         {
-            await DraftBeingCreated(context, context.Channel as IMessageChannel, knockoutData);
+            await DraftBeingCreated(context, context.Channel, knockoutData);
         }
 
         public static async Task DraftBeingCreated(SocketCommandContext context, IMessageChannel channel, KnockOutHandler knockoutData)
         {
-            Data_DraftBeingCreated.Construct(context, knockoutData);
+            DataDraftBeingCreated.Construct(context, knockoutData);
 
             var draftConstructingEmbed = EmbedBuilder_DraftBeingCreated();
 
@@ -51,13 +48,13 @@ namespace LongJohnSilver.Embeds
 
         public static async Task KnockoutIsOver(SocketCommandContext context, KnockOutHandler knockoutData)
         {
-            lastShowKnockoutSent = null;
-            await KnockoutIsOver(context, context.Channel as IMessageChannel, knockoutData);            
+            _lastShowKnockoutSent = null;
+            await KnockoutIsOver(context, context.Channel, knockoutData);            
         }
 
         public static async Task KnockoutIsOver(SocketCommandContext context, IMessageChannel channel, KnockOutHandler knockoutData)
         {
-            Data_KnockoutIsOver.Construct(context, knockoutData);
+            DataKnockoutIsOver.Construct(context, knockoutData);
 
             var draftKnockoutIsOverEmbed = EmbedBuilder_KnockoutIsOver();
 
@@ -66,7 +63,7 @@ namespace LongJohnSilver.Embeds
 
         // Data Methods
 
-        private static class Data_ShowKnockout
+        private static class DataShowKnockout
         {
             public static string Title;
             public static List<string> AllLivingContenders;
@@ -87,22 +84,20 @@ namespace LongJohnSilver.Embeds
 
                 PlayersReadyString = "";
                 
-                foreach (ulong playerId in knockoutData.AllPlayerIds)
-                {
-                    if(context.Guild.GetUser(playerId) != null)
+                foreach (var playerId in knockoutData.AllPlayerIds)
+                {     
+                    // The AlwaysDownloadUsers setting should make this check redundant, but keeping it for safety                    
+                    if (context.Guild.GetUser(playerId) == null) continue;
+
+                    var username = context.Guild.GetUser(playerId).Username;
+
+                    if (knockoutData.PlayerWentLastTime(playerId) || knockoutData.TurnsLeftForPlayer(playerId) == 0)
                     {
-                        if (knockoutData.PlayerWentLastTime(playerId) || knockoutData.TurnsLeftForPlayer(playerId) == 0)
-                        {
-                            PlayersReadyString += "~~";
-                        }
-
-                        PlayersReadyString += context.Guild.GetUser(playerId).Username;
-
-                        if (knockoutData.PlayerWentLastTime(playerId) || knockoutData.TurnsLeftForPlayer(playerId) == 0)
-                        {
-                            PlayersReadyString += "~~";
-                        }
-                        PlayersReadyString += ", ";
+                        PlayersReadyString += $"~~{username}~~, ";
+                    }
+                    else
+                    {
+                        PlayersReadyString += $"{context.Guild.GetUser(playerId).Username}, ";
                     }
                 }
                 
@@ -111,20 +106,19 @@ namespace LongJohnSilver.Embeds
 
         }
 
-        private static class Data_DraftBeingCreated
+        private static class DataDraftBeingCreated
         {
             public static string Username;
 
             public static void Construct(SocketCommandContext context, KnockOutHandler knockoutData)
             {
                 var userId = knockoutData.KnockoutCreatorUlong;
-
                 Username = context.Client.GetUser(userId).Username;
             }
 
         }
 
-        private static class Data_KnockoutIsOver
+        private static class DataKnockoutIsOver
         {
             public static string Title;
             public static List<string> ContenderList;
@@ -139,35 +133,35 @@ namespace LongJohnSilver.Embeds
         // Embed Build Methods
         private static Embed EmbedBuilder_DraftBeingCreated()
         {            
-            EmbedBuilder Embed = new EmbedBuilder();
-            Embed.WithAuthor("Knockout Being Created!");
-            Embed.WithColor(40, 200, 150);
-            Embed.WithDescription($"{Data_DraftBeingCreated.Username} is currently creating a new Knockout!");
+            var embed = new EmbedBuilder();
+            embed.WithAuthor("Knockout Being Created!");
+            embed.WithColor(40, 200, 150);
+            embed.WithDescription($"{DataDraftBeingCreated.Username} is currently creating a new Knockout!");
 
-            return Embed.Build();                        
+            return embed.Build();                        
         }
 
         private static Embed EmbedBuilder_ShowKnockout()
         {
             // Build up a list of living and fallen string sequences, dividing to accomodate the 1024 char limit.
-            int ranking = 0;
+            var ranking = 0;
 
-            List<string> theLivingFields = new List<string>();
-            List<string> theFallenFields = new List<string>();
+            var theLivingFields = new List<string>();
+            var theFallenFields = new List<string>();
 
-            string tempLivingString = "";
-            string tempFallenString = "";
+            var tempLivingString = "";
+            var tempFallenString = "";
 
 
-            foreach (string knockoutText in Data_ShowKnockout.AllLivingContenders)
+            foreach (var knockoutText in DataShowKnockout.AllLivingContenders)
             {
                 ranking += 1;
                 tempLivingString = tempLivingString + $"**{ranking})** {knockoutText}\n";
-                if (tempLivingString.Count() > 800)
-                {
-                    theLivingFields.Add(tempLivingString);
-                    tempLivingString = "";
-                }
+
+                if (tempLivingString.Length <= 800) continue;
+
+                theLivingFields.Add(tempLivingString);
+                tempLivingString = "";
             }
 
             if (tempLivingString != "")
@@ -176,15 +170,15 @@ namespace LongJohnSilver.Embeds
             }
             
 
-            foreach (string knockoutText in Data_ShowKnockout.AllFallenContenders)
+            foreach (var knockoutText in DataShowKnockout.AllFallenContenders)
             {
                 ranking += 1;
                 tempFallenString = tempFallenString + $"**{ranking})** {knockoutText}\n";
-                if (tempFallenString.Count() > 800)
-                {
-                    theFallenFields.Add(tempFallenString);
-                    tempFallenString = "";
-                }
+
+                if (tempFallenString.Length <= 800) continue;
+
+                theFallenFields.Add(tempFallenString);
+                tempFallenString = "";
             }
 
             if (tempFallenString != "")
@@ -194,59 +188,50 @@ namespace LongJohnSilver.Embeds
 
 
             // Build the Embed
-            EmbedBuilder Embed = new EmbedBuilder();
-            Embed.WithAuthor(Data_ShowKnockout.Title);
-            Embed.WithColor(40, 200, 150);
-            Embed.WithDescription($"**Current Players:** {Data_ShowKnockout.PlayersReadyString}");
+            var embed = new EmbedBuilder();
+            embed.WithAuthor(DataShowKnockout.Title);
+            embed.WithColor(40, 200, 150);
+            embed.WithDescription($"**Current Players:** {DataShowKnockout.PlayersReadyString}");
 
-            foreach (string fieldText in theLivingFields)
+            foreach (var fieldText in theLivingFields)
             {
                 if (fieldText == theLivingFields.First())
                 {
-                    Embed.AddField("The Living", theLivingFields.First());
+                    embed.AddField("The Living", theLivingFields.First());
                 }
                 else
                 {
-                    Embed.AddField(".", fieldText);
+                    embed.AddField(".", fieldText);
                 }
             }
 
-            foreach (string fieldText in theFallenFields)
+            foreach (var fieldText in theFallenFields)
             {
-                if (fieldText == theFallenFields.First())
-                {
-                    Embed.AddField("The Fallen", fieldText);
-                }
-                else
-                {
-                    Embed.AddField(".", fieldText);
-                }
+                embed.AddField(fieldText == theFallenFields.First() ? "The Fallen" : ".", fieldText);
             }                    
 
-            Embed.WithFooter($"Knockout brought to you by {Data_ShowKnockout.Username}", Data_ShowKnockout.UserAvatar);
+            embed.WithFooter($"Knockout brought to you by {DataShowKnockout.Username}", DataShowKnockout.UserAvatar);
 
-            return Embed.Build();
+            return embed.Build();
         }
 
         private static Embed EmbedBuilder_KnockoutIsOver()
         {
-            // Populate the results fields accomodating the 1024 char limit
-            int ranking = 0;            
-            List<string> theResultsFields = new List<string>();
-            string tempResults = "";
+            // Populate the results fields accommodating the 1024 char limit
+            var ranking = 0;            
+            var theResultsFields = new List<string>();
+            var tempResults = "";
 
-            foreach (string knockoutText in Data_KnockoutIsOver.ContenderList)
+            foreach (var knockoutText in DataKnockoutIsOver.ContenderList)
             {
                 ranking += 1;
                 
                 tempResults = tempResults + $"**{ranking})** {knockoutText}\n";
 
+                if (tempResults.Length <= 800) continue;
 
-                if (tempResults.Count() > 800)
-                {
-                    theResultsFields.Add(tempResults);
-                    tempResults = "";
-                }
+                theResultsFields.Add(tempResults);
+                tempResults = "";
             }
 
             if (tempResults != "")
@@ -255,35 +240,35 @@ namespace LongJohnSilver.Embeds
             }
 
             // Build the Embed
-            EmbedBuilder Embed = new EmbedBuilder();
-            Embed.WithAuthor(Data_KnockoutIsOver.Title);
-            Embed.WithColor(40, 200, 150);
+            var embed = new EmbedBuilder();
+            embed.WithAuthor(DataKnockoutIsOver.Title);
+            embed.WithColor(40, 200, 150);
 
-            Embed.WithDescription("The Knockout is over!!!");
+            embed.WithDescription("The Knockout is over!!!");
 
-            foreach (string fieldText in theResultsFields)
+            foreach (var fieldText in theResultsFields)
             {
                 if (fieldText == theResultsFields.First())
                 {
-                    Embed.AddField("The Final Results", theResultsFields.First());
+                    embed.AddField("The Final Results", theResultsFields.First());
                 }
                 else
                 {
-                    Embed.AddField(".", fieldText);
+                    embed.AddField(".", fieldText);
                 }
             }            
 
-            return Embed.Build();
+            return embed.Build();
         }
 
-        public static Embed PlayerVotingReportEmbed(string username, string avatarURL, string choiceToAdd, string choiceToSub)
+        public static Embed PlayerVotingReportEmbed(string username, string avatarUrl, string choiceToAdd, string choiceToSub)
         {
-            EmbedBuilder Embed = new EmbedBuilder();
-            Embed.WithAuthor(username, avatarURL);
-            Embed.WithColor(40, 200, 150);
-            Embed.WithDescription($"+ {choiceToAdd}\n- {choiceToSub}");
+            var embed = new EmbedBuilder();
+            embed.WithAuthor(username, avatarUrl);
+            embed.WithColor(40, 200, 150);
+            embed.WithDescription($"+ {choiceToAdd}\n- {choiceToSub}");
 
-            return Embed.Build();
+            return embed.Build();
         }
     }
 }
