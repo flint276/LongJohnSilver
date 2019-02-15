@@ -43,26 +43,12 @@ namespace LongJohnSilver
                 .AddSingleton(_commands)                
                 .BuildServiceProvider();
 
-
-
-
-
-            var botToken = "";
-
             // Validate config and data directories and get bot token
 
-            var currentDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            var currentConfig = $@"{currentDirectory}{Path.DirectorySeparatorChar}config";
-            var dataDirectory = $@"{currentDirectory}{Path.DirectorySeparatorChar}Data";
+            ConfigFileHandler.LoadKeys();
 
-            if (File.Exists(currentConfig)) {
-                var lines = System.IO.File.ReadAllLines(currentConfig);
-                botToken = lines.First();
-            }
-            else
-            {
-                throw new Exception($"Config File is Missing: {currentConfig}");
-            }
+            var currentDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            var dataDirectory = $@"{currentDirectory}{Path.DirectorySeparatorChar}Data";
 
             if (!Directory.Exists(dataDirectory))
             {
@@ -89,7 +75,7 @@ namespace LongJohnSilver
 
             await RegisterCommandsAsync();
 
-            await _client.LoginAsync(Discord.TokenType.Bot, botToken);            
+            await _client.LoginAsync(Discord.TokenType.Bot, ConfigFileHandler.BotToken);            
 
             await _client.SetGameAsync("type !help for... help, obv");
 

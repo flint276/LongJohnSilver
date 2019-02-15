@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Discord;
@@ -9,6 +11,7 @@ using Discord.Commands;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework.Constraints;
+using LongJohnSilver.Statics;
 
 namespace LongJohnSilver.Commands
 {
@@ -17,22 +20,34 @@ namespace LongJohnSilver.Commands
         [Command("weather")]
         public async Task WeatherReportAsync([Remainder] string input = "")
         {
+            var lat = string.Empty;
+            var lon = string.Empty;
+            var location = string.Empty;
+
             using (var w = new WebClient())
             {
-                var jsonString = string.Empty;
-                // ReSharper disable once StringLiteralTypo
-                var url = $"http://api.openweathermap.org/data/2.5/weather?q={input}&APPID=d92f7020874af5fb9b945e78ebb25106";
-
-                jsonString = w.DownloadString(url);
-
+                var url = $"https://api.opencagedata.com/geocode/v1/json?key={ConfigFileHandler.GeoKey}&q={input}";
+                var jsonString = w.DownloadString(url);
 
                 dynamic array = JObject.Parse(jsonString);
 
-                string townname = array.name;
+                location = array.results[0].formatted;
+                lat = array.results[0].geometry.lat;
+                lon = array.results[0].geometry.lng;
+            }
+
+            using (var w = new WebClient())
+            {
+                var url = $"http://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&APPID={ConfigFileHandler.WeatherKey}";
+                var jsonString = w.DownloadString(url);
+
+                dynamic array = JObject.Parse(jsonString);
+
+                string townname = location;
                 string country = array.sys.country;
                 string description = array.weather[0].description;
                 string icon = array.weather[0].icon;
-                string weatherSymbol = String.Empty;
+                string weatherSymbol = string.Empty;
 
                 switch (icon)
                 {
@@ -90,7 +105,7 @@ namespace LongJohnSilver.Commands
                         weatherSymbol = ":question:";
                         break;
                 }
-                
+
 
                 float temp = array.main.temp;
                 var tempC = Math.Round(temp - 273.15, 1);
@@ -102,14 +117,6 @@ namespace LongJohnSilver.Commands
                 embed.WithDescription($"{weatherSymbol}  *{description}*\n:thermometer:{tempC}c   :thermometer:{tempF}f");
 
                 await Context.Channel.SendMessageAsync("", false, embed.Build());
-
-                /*
-                await Context.Channel.SendMessageAsync($"{townname}, {country}");
-                await Context.Channel.SendMessageAsync($"{description}");
-                await Context.Channel.SendMessageAsync($"{icon}");
-                await Context.Channel.SendMessageAsync($"Temperature: C:{tempc} F:{tempf}");
-                */
-
             }
         }
     }
