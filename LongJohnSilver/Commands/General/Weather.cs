@@ -1,19 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Net;
-using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using NUnit.Framework.Constraints;
 using LongJohnSilver.Statics;
+using Newtonsoft.Json.Linq;
 
-namespace LongJohnSilver.Commands
+namespace LongJohnSilver.Commands.General
 {
     public class Weather : ModuleBase<SocketCommandContext>
     {

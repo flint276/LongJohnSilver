@@ -1,28 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Discord.Commands;
 using LongJohnSilver.Database;
+using LongJohnSilver.Embeds;
 using LongJohnSilver.Statics;
 
-namespace LongJohnSilver.Commands
+namespace LongJohnSilver.Commands.Knockout
 {
-    public class RemoveContender : ModuleBase<SocketCommandContext>
+    public class BeginKnockout : ModuleBase<SocketCommandContext>
     {
-        [Command("remove")]
-        public async Task RemoveContenderAsync([Remainder]string input = "")
+        [Command("begin")]
+        public async Task BeginKnockoutAsync()
         {
             if (!Context.IsPrivate)
             {
                 //await Context.Channel.SendMessageAsync(":x: Command Only for Knockout Creation and only for use in PM with Bot!");
-                return;
-            }
-
-            if (input == "")
-            {
-                await Context.Channel.SendMessageAsync(":x: No Value Entered!");
                 return;
             }
 
@@ -60,13 +51,26 @@ namespace LongJohnSilver.Commands
                     return;
             }
 
-            if (!knockouts.DeleteContender(input))
+            if (knockouts.ContendersCount < 4)
             {
-                await Context.Channel.SendMessageAsync($":x: No Exact Match Found for **{input}**. Please Try Again");
+                await Context.Channel.SendMessageAsync(":x: Knockouts are over when it reaches the Top 3. Please add more Contenders.");
                 return;
             }
 
-            await Context.Channel.SendMessageAsync($"You have removed the contender **{input}**");
+            if (knockouts.KnockoutTitle == "" || knockouts.KnockoutTitle == "No Knockout In Progress" || knockouts.KnockoutTitle == "Knockout Under Construction")
+            {
+                await Context.Channel.SendMessageAsync(":x: Please Name your Knockout");
+                return;
+            }
+
+            knockouts.SetKnockoutToActive();
+
+            await Context.Channel.SendMessageAsync("You're done! Please check in main channel for the knockout!");
+
+            var chnl = Context.Client.GetChannel(knockouts.KnockoutChannelUlong) as Discord.IMessageChannel;
+            await chnl.SendMessageAsync("A New Knockout Has Been Created!");
+
+            await BotEmbeds.ShowKnockout(Context, chnl, knockouts);
         }
     }
 }

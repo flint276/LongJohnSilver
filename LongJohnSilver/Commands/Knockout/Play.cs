@@ -1,12 +1,12 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
+using Discord;
 using Discord.Commands;
 using LongJohnSilver.Database;
-using Discord;
 using LongJohnSilver.Embeds;
 using LongJohnSilver.Statics;
 
-namespace LongJohnSilver.Commands
+namespace LongJohnSilver.Commands.Knockout
 {
     public class Play : ModuleBase<SocketCommandContext>
     {        

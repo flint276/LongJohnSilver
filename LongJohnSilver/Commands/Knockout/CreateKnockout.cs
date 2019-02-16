@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Discord.Commands;
 using LongJohnSilver.Database;
 using LongJohnSilver.Embeds;
 using LongJohnSilver.Statics;
 
-namespace LongJohnSilver.Commands
+namespace LongJohnSilver.Commands.Knockout
 {
     public class CreateKnockout : ModuleBase<SocketCommandContext>
     {

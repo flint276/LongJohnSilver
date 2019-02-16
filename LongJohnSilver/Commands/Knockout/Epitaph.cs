@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using Discord.Commands;
 using LongJohnSilver.Database;
-using Discord;
-using LongJohnSilver.Embeds;
 using LongJohnSilver.Statics;
 
-namespace LongJohnSilver.Commands
+namespace LongJohnSilver.Commands.Knockout
 {
     public class Epitaph : ModuleBase<SocketCommandContext>
     {

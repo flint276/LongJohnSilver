@@ -3,9 +3,7 @@ using System.Data;
 using System.Collections.Generic;
 using System.Data.SQLite;
 using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Reflection.Metadata.Ecma335;
 
 namespace LongJohnSilver.Database
 {
@@ -18,12 +16,11 @@ namespace LongJohnSilver.Database
         public string DbLocation = $@"{CurrentDirectory}{Path.DirectorySeparatorChar}Data{Path.DirectorySeparatorChar}";
         public string DbPath;
         public string DbSource;
-        public int CurrentVersion = 1;
+        public int CurrentVersion = 3;
 
         /// <summary>
         /// Constructor, creates database if not present
         /// </summary>
-        /// <param name="channelId"> Discord Channel Id which forms name of DB</param>
         public MainDataDb()
         {
 
@@ -47,6 +44,7 @@ namespace LongJohnSilver.Database
             }
         }
 
+        #region SQL Command Methods
         /// <summary>
         /// Run a simple, param free statement
         /// </summary>
@@ -73,7 +71,7 @@ namespace LongJohnSilver.Database
         {
             // Validate Parameters
             var paramNumber = 0;
-            foreach (var s in parameters)
+            foreach (var unused in parameters)
             {
                 paramNumber += 1;
                 if (!sql.Contains($"@param{paramNumber}"))
@@ -100,22 +98,10 @@ namespace LongJohnSilver.Database
                     command.ExecuteNonQuery();
                 }
             }
-
-
         }
+        #endregion SQL Comman Methods
 
-        /// <summary>
-        /// Delete the contents of the main database associated with a channel id
-        /// </summary>
-        /// <param name="channelId"></param>
-        public void EmptyKnockoutDatabase(string channelId)
-        {
-            string[] parameters = {channelId};
-
-            RunQuery("DELETE FROM knockout where channel = @param1", parameters);
-            RunQuery("DELETE FROM contenders where channel = @param1", parameters);
-            RunQuery("DELETE FROM kplayers where channel = @param1", parameters);                                   
-        }
+        #region Data Download Methods
 
         /// <summary>
         /// Get all Contenders from Database and return as a List of Contender Type
@@ -260,7 +246,7 @@ namespace LongJohnSilver.Database
         /// </summary>
         /// <returns></returns>
         public int GetVersion()
-        {            
+        {
             var versionNumber = 0;
 
             using (var db = new SQLiteConnection(DbSource))
@@ -285,7 +271,24 @@ namespace LongJohnSilver.Database
             return versionNumber;
         }
 
-        //  KNOCKOUT CREATION METHODS          
+
+
+        #endregion Data Download Methods
+
+        #region Knockout Methods    
+        
+        /// <summary>
+        /// Delete the contents of the main database associated with a channel id
+        /// </summary>
+        /// <param name="channelId"></param>
+        public void EmptyKnockoutDatabase(string channelId)
+        {
+            object[] parameters = { channelId };
+
+            RunQuery("DELETE FROM knockout where channel = @param1", parameters);
+            RunQuery("DELETE FROM contenders where channel = @param1", parameters);
+            RunQuery("DELETE FROM kplayers where channel = @param1", parameters);
+        }
 
         /// <summary>
         /// Create a new knockout entry 'Under Construction' and set status. Assign creating user and channel ids.
@@ -316,6 +319,7 @@ namespace LongJohnSilver.Database
         /// Insert a new Contender into the Contender table titled from parameter and assign score of 3
         /// </summary>
         /// <param name="contenderName"></param>
+        /// /// <param name="channelId"></param>
         public void AddContender(string contenderName, string channelId)
         {
             object[] parameters = { contenderName, channelId };
@@ -463,6 +467,7 @@ namespace LongJohnSilver.Database
         /// </summary>
         /// <param name="userIdString"></param>
         /// <param name="contenderName"></param>
+        /// <param name="channelId"></param>
         public void SetKillerForContender(string userIdString, string contenderName, string channelId)
         {
             object[] clearParameters = {userIdString, channelId};
@@ -493,7 +498,9 @@ namespace LongJohnSilver.Database
             RunQuery("UPDATE knockout SET status = 3 WHERE channel = @param1", parameters);
         }
 
-        // DATABASE CREATION
+        #endregion Knockout Methods
+
+        #region Database Creation Method
 
         public void CreateDatabase()
         {
@@ -501,6 +508,7 @@ namespace LongJohnSilver.Database
             RunQuery($"CREATE TABLE IF NOT EXISTS contenders(id INT PRIMARY KEY)");
             RunQuery($"CREATE TABLE IF NOT EXISTS knockout(id INT PRIMARY KEY)");
             RunQuery($"CREATE TABLE IF NOT EXISTS kplayers(id INT PRIMARY KEY)");
+            RunQuery($"CREATE TABLE IF NOT EXISTS channelroles(id INT PRIMARY KEY)");
             RunQuery($"CREATE TABLE IF NOT EXISTS version(ver INT)");
 
             // Populate Columns, catch and ignore any SQL errors as they are just advising the column already exists
@@ -521,15 +529,19 @@ namespace LongJohnSilver.Database
                 RunQuery($"ALTER TABLE kplayers ADD turnsleft INT");
                 RunQuery($"ALTER TABLE kplayers ADD lastplayed INT");
                 RunQuery($"ALTER TABLE kplayers ADD channel VARCHAR(50)");
+
+                RunQuery($"ALTER TABLE channelroles ADD channel VARCHAR(50)");
+                RunQuery($"ALTER TABLE channelroles ADD role VARCHAR(20)");
             }
-            catch (System.Data.SQLite.SQLiteException e)
+            catch (SQLiteException)
             {                
             }
                         
             // Update Version
             RunQuery($"DELETE FROM version");
             RunQuery($"INSERT INTO version (ver) VALUES ({CurrentVersion})");
-
         }
+
+#endregion Database Creation Method
     }
 }

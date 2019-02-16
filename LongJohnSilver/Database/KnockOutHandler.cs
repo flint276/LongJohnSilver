@@ -8,9 +8,9 @@ namespace LongJohnSilver.Database
     public class KnockOutHandler
     {
         private List<Contender> Contenders = new List<Contender>();
-        private Knockout KnockoutInfo = new Knockout();
-        private readonly IDatabase MainDb;
+        private Knockout KnockoutInfo = new Knockout();        
         private List<KPlayer> Players = new List<KPlayer>();
+        private readonly IDatabase MainDb;
 
 
         /// <summary>
