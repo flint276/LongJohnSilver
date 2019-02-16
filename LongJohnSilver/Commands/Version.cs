@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using LongJohnSilver.Database;
+using LongJohnSilver.Statics;
 
 namespace LongJohnSilver.Commands
 {
@@ -12,7 +14,8 @@ namespace LongJohnSilver.Commands
         [Command("version"), Alias("ver"), Summary("Version Number of Bot")]
         public async Task VersionAsync()
         {
-            await Context.Channel.SendMessageAsync("Version 0.9h");
+            var db = Factory.GetDatabase();
+            await Context.Channel.SendMessageAsync($"0.9h - DB: {db.GetVersion()}");
         }
 
     }

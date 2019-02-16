@@ -26,7 +26,7 @@ namespace LongJohnSilver.Commands
 
             using (var w = new WebClient())
             {
-                var url = $"https://api.opencagedata.com/geocode/v1/json?key={ConfigFileHandler.GeoKey}&q={input}";
+                var url = $"https://api.opencagedata.com/geocode/v1/json?key={BotSetupHandler.GeoKey}&q={input}";
                 var jsonString = w.DownloadString(url);
 
                 dynamic array = JObject.Parse(jsonString);
@@ -38,7 +38,7 @@ namespace LongJohnSilver.Commands
 
             using (var w = new WebClient())
             {
-                var url = $"http://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&APPID={ConfigFileHandler.WeatherKey}";
+                var url = $"http://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&APPID={BotSetupHandler.WeatherKey}";
                 var jsonString = w.DownloadString(url);
 
                 dynamic array = JObject.Parse(jsonString);

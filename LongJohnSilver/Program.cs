@@ -12,6 +12,7 @@ using System.IO;
 using System.Data.SQLite;
 using LongJohnSilver.Database;
 using LongJohnSilver.Statics;
+using NUnit.Framework;
 
 namespace LongJohnSilver
 {
@@ -43,17 +44,9 @@ namespace LongJohnSilver
                 .AddSingleton(_commands)                
                 .BuildServiceProvider();
 
-            // Validate config and data directories and get bot token
+            // Run All Setup Tasks
 
-            ConfigFileHandler.LoadKeys();
-
-            var currentDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            var dataDirectory = $@"{currentDirectory}{Path.DirectorySeparatorChar}Data";
-
-            if (!Directory.Exists(dataDirectory))
-            {
-                Directory.CreateDirectory(dataDirectory);
-            }
+            Setup();
 
             // event subscriptions
             _client.Log += Log;
@@ -75,7 +68,7 @@ namespace LongJohnSilver
 
             await RegisterCommandsAsync();
 
-            await _client.LoginAsync(Discord.TokenType.Bot, ConfigFileHandler.BotToken);            
+            await _client.LoginAsync(Discord.TokenType.Bot, BotSetupHandler.BotToken);            
 
             await _client.SetGameAsync("type !help for... help, obv");
 
@@ -134,6 +127,11 @@ namespace LongJohnSilver
             }
 
             await Task.Delay(-1);
+        }
+
+        private static void Setup()
+        {
+            BotSetupHandler.LoadKeys();
         }
     }
 }

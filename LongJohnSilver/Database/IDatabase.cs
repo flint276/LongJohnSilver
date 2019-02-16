@@ -8,12 +8,14 @@ namespace LongJohnSilver.Database
         void AddKnockoutTitle(string knockoutTitle, string channelId);
         void AddPlayerToKnockout(string userIdString, string channelId);
         void ChangeScore(string contenderName, int modifier, string channelId);
+        void CreateDatabase();
         void CreateNewKnockout(string userId, string channelId);
         void EmptyKnockoutDatabase(string channelId);
         List<Contender> GetAllContenders(string channelId);
         List<Knockout> GetAllKnockouts();
         List<Knockout> GetAllKnockouts(string channelId);
         List<KPlayer> GetAllPlayers(string channelId);
+        int GetVersion();
         void NewDay(string channelId);
         void NewDayForAll();
         void RegisterPlayersTurn(string userIdString, string channelId);
@@ -23,6 +25,8 @@ namespace LongJohnSilver.Database
         void ResetContenderTable(string channelId);
         void ResetKnockoutTable(string channelId);
         void ResetPlayersTable(string channelId);
+        void RunQuery(string sql);
+        void RunQuery(string sql, object[] parameters);
         void SetEpitaphForContender(string contenderName, string epitaph, string channelId);
         void SetKillerForContender(string userIdString, string contenderName, string channelId);
         void SetKnockoutToActive(string channelId);

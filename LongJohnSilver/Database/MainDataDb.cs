@@ -5,6 +5,7 @@ using System.Data.SQLite;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Metadata.Ecma335;
 
 namespace LongJohnSilver.Database
 {
@@ -17,6 +18,7 @@ namespace LongJohnSilver.Database
         public string DbLocation = $@"{CurrentDirectory}{Path.DirectorySeparatorChar}Data{Path.DirectorySeparatorChar}";
         public string DbPath;
         public string DbSource;
+        public int CurrentVersion = 1;
 
         /// <summary>
         /// Constructor, creates database if not present
@@ -28,10 +30,78 @@ namespace LongJohnSilver.Database
             DbPath = $"{DbLocation}maindata.db";
             DbSource = $"Data Source={DbPath}";
 
+            if (!Directory.Exists(DbLocation))
+            {
+                Directory.CreateDirectory(DbLocation);
+            }
+
             if (!File.Exists(DbPath))
             {
-                throw new InvalidOperationException("Database File is missing!");
+                SQLiteConnection.CreateFile(DbPath);
+                CreateDatabase();                
             }
+
+            if (CurrentVersion > GetVersion())
+            {
+                CreateDatabase();
+            }
+        }
+
+        /// <summary>
+        /// Run a simple, param free statement
+        /// </summary>
+        /// <param name="sql"></param>
+        public void RunQuery(string sql)
+        {
+            using (var db = new SQLiteConnection(DbSource))
+            {
+                db.Open();
+
+                using (var command = new SQLiteCommand(sql, db))
+                {
+                    command.ExecuteNonQuery();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Run a simple statement with parameters
+        /// </summary>
+        /// <param name="sql"></param>
+        /// <param name="parameters"></param>
+        public void RunQuery(string sql, object[] parameters)
+        {
+            // Validate Parameters
+            var paramNumber = 0;
+            foreach (var s in parameters)
+            {
+                paramNumber += 1;
+                if (!sql.Contains($"@param{paramNumber}"))
+                {
+                    throw new Exception("Corrupt SQL Parameters");
+                }
+            }
+
+            paramNumber = 0;
+
+            using (var db = new SQLiteConnection(DbSource))
+            {
+                db.Open();
+
+                using (var command = new SQLiteCommand(sql, db))
+                {
+                    command.CommandType = CommandType.Text;
+                    foreach (var s in parameters)
+                    {
+                        paramNumber += 1;
+                        command.Parameters.Add(new SQLiteParameter($"@param{paramNumber}", s));
+                    }
+
+                    command.ExecuteNonQuery();
+                }
+            }
+
+
         }
 
         /// <summary>
@@ -40,39 +110,11 @@ namespace LongJohnSilver.Database
         /// <param name="channelId"></param>
         public void EmptyKnockoutDatabase(string channelId)
         {
-            var sql = "";
-          
-            using (SQLiteConnection db = new SQLiteConnection(DbSource))
-            {
-                db.Open();
+            string[] parameters = {channelId};
 
-                sql = $"DELETE FROM knockout where channel = @param1";
-
-                using (SQLiteCommand command = new SQLiteCommand(sql, db))
-                {
-                    command.CommandType = CommandType.Text;
-                    command.Parameters.Add(new SQLiteParameter("@param1", channelId));
-                    command.ExecuteNonQuery();
-                }
-
-                sql = $"DELETE FROM contenders where channel = @param1";
-
-                using (SQLiteCommand command = new SQLiteCommand(sql, db))
-                {
-                    command.CommandType = CommandType.Text;
-                    command.Parameters.Add(new SQLiteParameter("@param1", channelId));
-                    command.ExecuteNonQuery();
-                }
-
-                sql = $"DELETE FROM kplayers where channel = @param1";
-
-                using (SQLiteCommand command = new SQLiteCommand(sql, db))
-                {
-                    command.CommandType = CommandType.Text;
-                    command.Parameters.Add(new SQLiteParameter("@param1", channelId));
-                    command.ExecuteNonQuery();
-                }
-            }               
+            RunQuery("DELETE FROM knockout where channel = @param1", parameters);
+            RunQuery("DELETE FROM contenders where channel = @param1", parameters);
+            RunQuery("DELETE FROM kplayers where channel = @param1", parameters);                                   
         }
 
         /// <summary>
@@ -82,14 +124,13 @@ namespace LongJohnSilver.Database
         /// <returns></returns>
         public List<Contender> GetAllContenders(string channelId)
         {
-            string sql = "";
             var contenderList = new List<Contender>();
 
             using (SQLiteConnection db = new SQLiteConnection(DbSource))
             {
                 db.Open();
 
-                sql = $"SELECT * FROM contenders WHERE channel = @param1";
+                var sql = $"SELECT * FROM contenders WHERE channel = @param1";
                 using (SQLiteCommand command = new SQLiteCommand(sql, db))
                 {
                     command.CommandType = CommandType.Text;
@@ -119,14 +160,13 @@ namespace LongJohnSilver.Database
         /// <returns></returns>
         public List<Knockout> GetAllKnockouts(string channelId)
         {
-            string sql = "";
             List<Knockout> knockoutList = new List<Knockout>();
 
             using (SQLiteConnection db = new SQLiteConnection(DbSource))
             {
                 db.Open();
 
-                sql = $"SELECT * FROM knockout WHERE channel = @param1";
+                var sql = $"SELECT * FROM knockout WHERE channel = @param1";
                 using (SQLiteCommand command = new SQLiteCommand(sql, db))
                 {
                     command.CommandType = CommandType.Text;
@@ -152,14 +192,13 @@ namespace LongJohnSilver.Database
 
         public List<Knockout> GetAllKnockouts()
         {
-            string sql = "";
             List<Knockout> knockoutList = new List<Knockout>();
 
             using (SQLiteConnection db = new SQLiteConnection(DbSource))
             {
                 db.Open();
 
-                sql = $"SELECT * FROM knockout";
+                var sql = $"SELECT * FROM knockout";
                 using (SQLiteCommand command = new SQLiteCommand(sql, db))
                 {
                     using (SQLiteDataReader reader = command.ExecuteReader())
@@ -187,14 +226,13 @@ namespace LongJohnSilver.Database
         /// <returns></returns>
         public List<KPlayer> GetAllPlayers(string channelId)
         {
-            string sql = "";
             List<KPlayer> playerList = new List<KPlayer>();
 
             using (SQLiteConnection db = new SQLiteConnection(DbSource))
             {
                 db.Open();
 
-                sql = $"SELECT * FROM kplayers WHERE channel = @param1";
+                var sql = $"SELECT * FROM kplayers WHERE channel = @param1";
                 using (SQLiteCommand command = new SQLiteCommand(sql, db))
                 {
                     command.CommandType = CommandType.Text;
@@ -217,9 +255,37 @@ namespace LongJohnSilver.Database
             return playerList;
         }
 
-        //
+        /// <summary>
+        /// Return the version number from the database
+        /// </summary>
+        /// <returns></returns>
+        public int GetVersion()
+        {            
+            var versionNumber = 0;
+
+            using (var db = new SQLiteConnection(DbSource))
+            {
+                db.Open();
+
+                var sql = $"SELECT * FROM version";
+                using (var command = new SQLiteCommand(sql, db))
+                {
+                    command.CommandType = CommandType.Text;
+
+                    using (var reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            versionNumber = (int)reader["ver"];
+                        }
+                    }
+                }
+            }
+
+            return versionNumber;
+        }
+
         //  KNOCKOUT CREATION METHODS          
-        //
 
         /// <summary>
         /// Create a new knockout entry 'Under Construction' and set status. Assign creating user and channel ids.
@@ -228,52 +294,22 @@ namespace LongJohnSilver.Database
         /// <param name="channelId"></param>
         public void CreateNewKnockout(string userId, string channelId)
         {
-            string sql = "";
+            object[] deleteParameters = {channelId};
+            object[] insertParameters = {userId, channelId};
 
-            using (SQLiteConnection db = new SQLiteConnection(DbSource))
-            {
-                db.Open();
-
-                sql = $"DELETE FROM knockout WHERE channel = @param1";
-                using (SQLiteCommand command = new SQLiteCommand(sql, db))
-                {
-                    command.CommandType = CommandType.Text;
-                    command.Parameters.Add(new SQLiteParameter("@param1", channelId));
-                    command.ExecuteNonQuery();
-                }
-
-                sql = $"INSERT INTO knockout (name, status, owner, channel) VALUES ('Knockout Under Construction', 4, @param1, @param2)";
-                using (SQLiteCommand command = new SQLiteCommand(sql, db))
-                {
-                    command.CommandType = CommandType.Text;
-                    command.Parameters.Add(new SQLiteParameter("@param1", userId));
-                    command.Parameters.Add(new SQLiteParameter("@param2", channelId));
-                    command.ExecuteNonQuery();
-                }
-            }
+            RunQuery("DELETE FROM knockout WHERE channel = @param1", deleteParameters);
+            RunQuery("INSERT INTO knockout (name, status, owner, channel) VALUES ('Knockout Under Construction', 4, @param1, @param2)", insertParameters);
         }
 
         /// <summary>
         /// Update the name of Knockout to parameter
         /// </summary>
         /// <param name="knockoutTitle"></param>
+        /// <param name="channelId"></param>
         public void AddKnockoutTitle(string knockoutTitle, string channelId)
         {
-            string sql = "";
-
-            using (SQLiteConnection db = new SQLiteConnection(DbSource))
-            {
-                db.Open();
-
-                sql = $"UPDATE knockout SET name = @param1 where channel = @param2";
-                using (SQLiteCommand command = new SQLiteCommand(sql, db))
-                {
-                    command.CommandType = CommandType.Text;
-                    command.Parameters.Add(new SQLiteParameter("@param1", knockoutTitle));
-                    command.Parameters.Add(new SQLiteParameter("@param2", channelId));
-                    command.ExecuteNonQuery();
-                }
-            }
+            object[] parameters = {knockoutTitle, channelId};
+            RunQuery("UPDATE knockout SET name = @param1 where channel = @param2", parameters);
         }
 
         /// <summary>
@@ -282,21 +318,8 @@ namespace LongJohnSilver.Database
         /// <param name="contenderName"></param>
         public void AddContender(string contenderName, string channelId)
         {
-            string sql = "";
-
-            using (SQLiteConnection db = new SQLiteConnection(DbSource))
-            {
-                db.Open();
-
-                sql = $"INSERT INTO contenders (name, score, killer, epitaph, channel) VALUES (@param1, 3, '', '', @param2)";
-                using (SQLiteCommand command = new SQLiteCommand(sql, db))
-                {
-                    command.CommandType = CommandType.Text;
-                    command.Parameters.Add(new SQLiteParameter("@param1", contenderName));
-                    command.Parameters.Add(new SQLiteParameter("@param2", channelId));
-                    command.ExecuteNonQuery();
-                }
-            }
+            object[] parameters = { contenderName, channelId };
+            RunQuery("INSERT INTO contenders (name, score, killer, epitaph, channel) VALUES (@param1, 3, '', '', @param2)", parameters);
         }
 
         /// <summary>
@@ -306,21 +329,8 @@ namespace LongJohnSilver.Database
         /// <param name="channelId"></param>
         public void RemoveContender(string contenderName, string channelId)
         {
-            string sql = "";
-
-            using (SQLiteConnection db = new SQLiteConnection(DbSource))
-            {
-                db.Open();
-
-                sql = $"DELETE FROM contenders WHERE name = @param1 AND channel = @param2";
-                using (SQLiteCommand command = new SQLiteCommand(sql, db))
-                {
-                    command.CommandType = CommandType.Text;
-                    command.Parameters.Add(new SQLiteParameter("@param1", contenderName));
-                    command.Parameters.Add(new SQLiteParameter("@param2", channelId));
-                    command.ExecuteNonQuery();
-                }
-            }
+            object[] parameters = {contenderName, channelId};
+            RunQuery("DELETE FROM contenders WHERE name = @param1 AND channel = @param2", parameters);
         }
 
         //
@@ -342,30 +352,9 @@ namespace LongJohnSilver.Database
         /// </summary>
         public void ResetKnockoutTable(string channelId)
         {
-            string sql = "";
-
-            using (SQLiteConnection db = new SQLiteConnection(DbSource))
-            {
-                db.Open();
-
-                sql = $"DELETE FROM knockout WHERE channel = @param1";
-                using (SQLiteCommand command = new SQLiteCommand(sql, db))
-                {
-                    command.CommandType = CommandType.Text;
-                    command.Parameters.Add(new SQLiteParameter("@param1", channelId));
-                    command.ExecuteNonQuery();
-                }
-
-                sql = "INSERT INTO knockout(name, status, owner, channel) values ('No Knockout In Progress', 1, '0', @param1)";
-                using (SQLiteCommand command = new SQLiteCommand(sql, db))
-                {
-                    command.CommandType = CommandType.Text;
-                    command.Parameters.Add(new SQLiteParameter("@param1", channelId));
-                    command.ExecuteNonQuery();
-                }
-
-
-            }
+            object[] parameters = {channelId};
+            RunQuery("DELETE FROM knockout WHERE channel = @param1", parameters);
+            RunQuery("INSERT INTO knockout(name, status, owner, channel) values ('No Knockout In Progress', 1, '0', @param1)", parameters);
         }
 
         /// <summary>
@@ -373,20 +362,8 @@ namespace LongJohnSilver.Database
         /// </summary>
         public void ResetContenderTable(string channelId)
         {
-            string sql = "";
-
-            using (SQLiteConnection db = new SQLiteConnection(DbSource))
-            {
-                db.Open();
-
-                sql = $"DELETE FROM contenders WHERE channel = @param1";
-                using (SQLiteCommand command = new SQLiteCommand(sql, db))
-                {
-                    command.CommandType = CommandType.Text;
-                    command.Parameters.Add(new SQLiteParameter("@param1", channelId));
-                    command.ExecuteNonQuery();
-                }
-            }
+            object[] parameters = {channelId};
+            RunQuery("DELETE FROM contenders WHERE channel = @param1", parameters);
         }
 
         /// <summary>
@@ -394,20 +371,8 @@ namespace LongJohnSilver.Database
         /// </summary>
         public void ResetPlayersTable(string channelId)
         {
-            string sql = "";
-
-            using (SQLiteConnection db = new SQLiteConnection(DbSource))
-            {
-                db.Open();
-
-                sql = $"DELETE FROM kplayers WHERE channel = @param1";
-                using (SQLiteCommand command = new SQLiteCommand(sql, db))
-                {
-                    command.CommandType = CommandType.Text;
-                    command.Parameters.Add(new SQLiteParameter("@param1", channelId));
-                    command.ExecuteNonQuery();
-                }
-            }
+            object[] parameters = {channelId};
+            RunQuery("DELETE FROM kplayers WHERE channel = @param1", parameters);
         }
 
         /// <summary>
@@ -415,22 +380,8 @@ namespace LongJohnSilver.Database
         /// </summary>
         public void NewDay(string channelId)
         {
-            string sql = "";
-
-            using (SQLiteConnection db = new SQLiteConnection(DbSource))
-            {
-                db.Open();
-
-                sql = $"UPDATE kplayers SET lastplayed = 0, turnsleft = 3 WHERE channel = @param1";
-                using (SQLiteCommand command = new SQLiteCommand(sql, db))
-                {
-                    command.CommandType = CommandType.Text;
-                    command.Parameters.Add(new SQLiteParameter("@param1", channelId));
-                    command.ExecuteNonQuery();
-                }
-
-
-            }
+            object[] parameters = {channelId};
+            RunQuery("UPDATE kplayers SET lastplayed = 0, turnsleft = 3 WHERE channel = @param1", parameters);
         }
 
         /// <summary>
@@ -438,20 +389,7 @@ namespace LongJohnSilver.Database
         /// </summary>
         public void NewDayForAll()
         {
-            string sql = "";
-
-            using (SQLiteConnection db = new SQLiteConnection(DbSource))
-            {
-                db.Open();
-
-                sql = $"UPDATE kplayers SET lastplayed = 0, turnsleft = 3";
-                using (SQLiteCommand command = new SQLiteCommand(sql, db))
-                {
-                    command.ExecuteNonQuery();
-                }
-
-
-            }
+            RunQuery("UPDATE kplayers SET lastplayed = 0, turnsleft = 3");
         }
 
         /// <summary>
@@ -459,22 +397,8 @@ namespace LongJohnSilver.Database
         /// </summary>
         public void SetKnockoutToActive(string channelId)
         {
-            string sql = "";
-
-            using (SQLiteConnection db = new SQLiteConnection(DbSource))
-            {
-                db.Open();
-
-                sql = $"UPDATE knockout SET status = 2 WHERE channel = @param1";
-                using (SQLiteCommand command = new SQLiteCommand(sql, db))
-                {
-                    command.CommandType = CommandType.Text;
-                    command.Parameters.Add(new SQLiteParameter("@param1", channelId));
-                    command.ExecuteNonQuery();
-                }
-
-
-            }
+            object[] parameters = { channelId };
+            RunQuery("UPDATE knockout SET status = 2 WHERE channel = @param1", parameters);            
         }
 
         /// <summary>
@@ -482,49 +406,22 @@ namespace LongJohnSilver.Database
         /// </summary>
         /// <param name="contenderName"></param>
         /// <param name="modifier"></param>
+        /// <param name="channelId"></param>
         public void ChangeScore(string contenderName, int modifier, string channelId)
         {
-            string sql = "";
-
-            using (SQLiteConnection db = new SQLiteConnection(DbSource))
-            {
-                db.Open();
-
-                sql = $"UPDATE contenders SET score = score + @param1 WHERE name = @param2 AND channel = @param3";
-
-                using (SQLiteCommand command = new SQLiteCommand(sql, db))
-                {
-                    command.CommandType = CommandType.Text;
-                    command.Parameters.Add(new SQLiteParameter("@param1", modifier));
-                    command.Parameters.Add(new SQLiteParameter("@param2", contenderName));                    
-                    command.Parameters.Add(new SQLiteParameter("@param3", channelId));
-                    command.ExecuteNonQuery();
-                }
-            }
+            object[] parameters = {modifier, contenderName, channelId};
+            RunQuery("UPDATE contenders SET score = score + @param1 WHERE name = @param2 AND channel = @param3", parameters);
         }
 
         /// <summary>
         /// Add a new player to the knockout. Even though they've most likely just gone their turns are still 3 and lastplayed 0. These values should be set by the calling method.
         /// </summary>
         /// <param name="userIdString"></param>
+        /// <param name="channelId"></param>
         public void AddPlayerToKnockout(string userIdString, string channelId)
         {
-            string sql = "";
-
-            using (SQLiteConnection db = new SQLiteConnection(DbSource))
-            {
-                db.Open();
-
-                sql = $"INSERT INTO kplayers (playerid, turnsleft, lastplayed, channel) VALUES (@param1, 3, 0, @param2)";
-
-                using (SQLiteCommand command = new SQLiteCommand(sql, db))
-                {
-                    command.CommandType = CommandType.Text;
-                    command.Parameters.Add(new SQLiteParameter("@param1", userIdString));                    
-                    command.Parameters.Add(new SQLiteParameter("@param2", channelId));
-                    command.ExecuteNonQuery();
-                }
-            }
+            object[] parameters = {userIdString, channelId};
+            RunQuery("INSERT INTO kplayers (playerid, turnsleft, lastplayed, channel) VALUES (@param1, 3, 0, @param2)", parameters);
         }
 
         /// <summary>
@@ -532,62 +429,21 @@ namespace LongJohnSilver.Database
         /// </summary>
         public void ResetAllPlayersLastPlayedStatus(string channelId)
         {
-            string sql = "";
-
-            using (SQLiteConnection db = new SQLiteConnection(DbSource))
-            {
-                db.Open();
-
-                sql = $"UPDATE kplayers SET lastplayed = 0 WHERE lastplayed = 1 AND channel = @param1";
-
-                using (SQLiteCommand command = new SQLiteCommand(sql, db))
-                {
-                    command.CommandType = CommandType.Text;
-                    command.Parameters.Add(new SQLiteParameter("@param1", channelId));
-                    command.ExecuteNonQuery();
-                }
-
-                sql = $"UPDATE kplayers SET lastplayed = 1 WHERE lastplayed = 2 AND channel = @param1";
-
-                using (SQLiteCommand command = new SQLiteCommand(sql, db))
-                {
-                    command.CommandType = CommandType.Text;
-                    command.Parameters.Add(new SQLiteParameter("@param1", channelId));
-                    command.ExecuteNonQuery();
-                }
-            }
+            object[] parameters = {channelId};
+            RunQuery("UPDATE kplayers SET lastplayed = 0 WHERE lastplayed = 1 AND channel = @param1", parameters);
+            RunQuery("UPDATE kplayers SET lastplayed = 1 WHERE lastplayed = 2 AND channel = @param1", parameters);
         }
 
         /// <summary>
         /// Deduct nominated kplayer row turnplayed by 1 and set lastplayed to 1
         /// </summary>
         /// <param name="userIdString"></param>
+        /// <param name="channelId"></param>
         public void RegisterPlayersTurn(string userIdString, string channelId)
         {
-            string sql = "";
-
-            using (SQLiteConnection db = new SQLiteConnection(DbSource))
-            {
-                db.Open();
-
-                sql = $"UPDATE kplayers SET turnsleft = turnsleft - 1 WHERE playerid = @param1 AND channel = @param2";
-                using (SQLiteCommand command = new SQLiteCommand(sql, db))
-                {
-                    command.CommandType = CommandType.Text;
-                    command.Parameters.Add(new SQLiteParameter("@param1", userIdString));                    
-                    command.Parameters.Add(new SQLiteParameter("@param2", channelId));
-                    command.ExecuteNonQuery();
-                }
-
-                sql = $"UPDATE kplayers SET lastplayed = 2 WHERE playerid = @param1 AND channel = @param2";
-                using (SQLiteCommand command = new SQLiteCommand(sql, db))
-                {
-                    command.CommandType = CommandType.Text;
-                    command.Parameters.Add(new SQLiteParameter("@param1", userIdString));                    
-                    command.Parameters.Add(new SQLiteParameter("@param2", channelId));
-                    command.ExecuteNonQuery();
-                }
-            }
+            object[] parameters = {userIdString, channelId};
+            RunQuery("UPDATE kplayers SET turnsleft = turnsleft - 1 WHERE playerid = @param1 AND channel = @param2", parameters);
+            RunQuery("UPDATE kplayers SET lastplayed = 2 WHERE playerid = @param1 AND channel = @param2", parameters);
         }
 
         /// <summary>
@@ -595,25 +451,11 @@ namespace LongJohnSilver.Database
         /// </summary>
         /// <param name="value"></param>
         /// <param name="contenderName"></param>
+        /// <param name="channelId"></param>
         public void SetScoreForContender(int value, string contenderName, string channelId)
         {
-            string sql = "";
-
-            using (SQLiteConnection db = new SQLiteConnection(DbSource))
-            {
-                db.Open();
-
-                sql = $"UPDATE contenders SET score = @param1 WHERE name = @param2 AND channel = @param3";
-
-                using (SQLiteCommand command = new SQLiteCommand(sql, db))
-                {
-                    command.CommandType = CommandType.Text;
-                    command.Parameters.Add(new SQLiteParameter("@param1", value));
-                    command.Parameters.Add(new SQLiteParameter("@param2", contenderName));
-                    command.Parameters.Add(new SQLiteParameter("@param3", channelId));
-                    command.ExecuteNonQuery();
-                }
-            }
+            object[] parameters = {value, contenderName, channelId};
+            RunQuery("UPDATE contenders SET score = @param1 WHERE name = @param2 AND channel = @param3", parameters);            
         }
 
         /// <summary>
@@ -623,55 +465,23 @@ namespace LongJohnSilver.Database
         /// <param name="contenderName"></param>
         public void SetKillerForContender(string userIdString, string contenderName, string channelId)
         {
-            string sql = "";
+            object[] clearParameters = {userIdString, channelId};
+            object[] setParameters = {userIdString, contenderName, channelId};
 
-            using (SQLiteConnection db = new SQLiteConnection(DbSource))
-            {
-                db.Open();
-
-                sql = $"UPDATE contenders SET killer = '' WHERE killer = @param1 AND channel = @param2";
-
-                using (SQLiteCommand command = new SQLiteCommand(sql, db))
-                {
-                    command.CommandType = CommandType.Text;
-                    command.Parameters.Add(new SQLiteParameter("@param1", userIdString));                    
-                    command.Parameters.Add(new SQLiteParameter("@param2", channelId));
-                    command.ExecuteNonQuery();
-                }
-
-                sql = $"UPDATE contenders SET killer = @param1 WHERE name = @param2 AND channel = @param3";
-
-                using (SQLiteCommand command = new SQLiteCommand(sql, db))
-                {
-                    command.CommandType = CommandType.Text;
-                    command.Parameters.Add(new SQLiteParameter("@param1", userIdString));
-                    command.Parameters.Add(new SQLiteParameter("@param2", contenderName));                    
-                    command.Parameters.Add(new SQLiteParameter("@param3", channelId));
-                    command.ExecuteNonQuery();
-                }
-
-            }
+            RunQuery("UPDATE contenders SET killer = '' WHERE killer = @param1 AND channel = @param2", clearParameters);
+            RunQuery("UPDATE contenders SET killer = @param1 WHERE name = @param2 AND channel = @param3", setParameters);            
         }
 
+        /// <summary>
+        /// Set the Epitaph of a Contender
+        /// </summary>
+        /// <param name="contenderName"></param>
+        /// <param name="epitaph"></param>
+        /// <param name="channelId"></param>
         public void SetEpitaphForContender(string contenderName, string epitaph, string channelId)
         {
-            string sql = "";
-
-            using (SQLiteConnection db = new SQLiteConnection(DbSource))
-            {
-                db.Open();
-
-                sql = $"UPDATE contenders SET epitaph = @param1 WHERE name = @param2 AND channel = @param3";
-
-                using (SQLiteCommand command = new SQLiteCommand(sql, db))
-                {
-                    command.CommandType = CommandType.Text;
-                    command.Parameters.Add(new SQLiteParameter("@param1", epitaph));
-                    command.Parameters.Add(new SQLiteParameter("@param2", contenderName));                    
-                    command.Parameters.Add(new SQLiteParameter("@param3", channelId));
-                    command.ExecuteNonQuery();
-                }
-            }
+            object[] parameters = {epitaph, contenderName, channelId};
+            RunQuery("UPDATE contenders SET epitaph = @param1 WHERE name = @param2 AND channel = @param3", parameters);
         }
 
         /// <summary>
@@ -679,20 +489,47 @@ namespace LongJohnSilver.Database
         /// </summary>
         public void SetKnockoutToEnded(string channelId)
         {
-            string sql = "";
+            object[] parameters = {channelId};
+            RunQuery("UPDATE knockout SET status = 3 WHERE channel = @param1", parameters);
+        }
 
-            using (SQLiteConnection db = new SQLiteConnection(DbSource))
+        // DATABASE CREATION
+
+        public void CreateDatabase()
+        {
+            // Create Tables
+            RunQuery($"CREATE TABLE IF NOT EXISTS contenders(id INT PRIMARY KEY)");
+            RunQuery($"CREATE TABLE IF NOT EXISTS knockout(id INT PRIMARY KEY)");
+            RunQuery($"CREATE TABLE IF NOT EXISTS kplayers(id INT PRIMARY KEY)");
+            RunQuery($"CREATE TABLE IF NOT EXISTS version(ver INT)");
+
+            // Populate Columns, catch and ignore any SQL errors as they are just advising the column already exists
+            try
             {
-                db.Open();
+                RunQuery($"ALTER TABLE contenders ADD name VARCHAR(200)");
+                RunQuery($"ALTER TABLE contenders ADD score INT");
+                RunQuery($"ALTER TABLE contenders ADD killer VARCHAR(50)");
+                RunQuery($"ALTER TABLE contenders ADD epitaph VARCHAR(200)");
+                RunQuery($"ALTER TABLE contenders ADD channel VARCHAR(50)");
 
-                sql = $"UPDATE knockout SET status = 3 WHERE channel = @param1";
-                using (SQLiteCommand command = new SQLiteCommand(sql, db))
-                {
-                    command.CommandType = CommandType.Text;
-                    command.Parameters.Add(new SQLiteParameter("@param1", channelId));
-                    command.ExecuteNonQuery();
-                }
+                RunQuery($"ALTER TABLE knockout ADD name VARCHAR(200)");
+                RunQuery($"ALTER TABLE knockout ADD status INT");
+                RunQuery($"ALTER TABLE knockout ADD owner VARCHAR(50)");
+                RunQuery($"ALTER TABLE knockout ADD channel VARCHAR(50)");
+
+                RunQuery($"ALTER TABLE kplayers ADD playerid VARCHAR(30)");
+                RunQuery($"ALTER TABLE kplayers ADD turnsleft INT");
+                RunQuery($"ALTER TABLE kplayers ADD lastplayed INT");
+                RunQuery($"ALTER TABLE kplayers ADD channel VARCHAR(50)");
             }
+            catch (System.Data.SQLite.SQLiteException e)
+            {                
+            }
+                        
+            // Update Version
+            RunQuery($"DELETE FROM version");
+            RunQuery($"INSERT INTO version (ver) VALUES ({CurrentVersion})");
+
         }
     }
 }
