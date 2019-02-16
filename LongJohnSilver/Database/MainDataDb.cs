@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Data.SQLite;
 using System.IO;
 using System.Reflection;
+using NUnit.Framework;
 
 namespace LongJohnSilver.Database
 {
@@ -269,6 +270,13 @@ namespace LongJohnSilver.Database
             }
 
             return versionNumber;
+        }
+
+        public List<ChannelRole> GetAllChannelRoles()
+        {
+            var channelRoles = new List<ChannelRole>();
+
+            return channelRoles;
         }
 
 

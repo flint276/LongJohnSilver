@@ -15,6 +15,7 @@ namespace LongJohnSilver.Database
         List<Knockout> GetAllKnockouts();
         List<Knockout> GetAllKnockouts(string channelId);
         List<KPlayer> GetAllPlayers(string channelId);
+        List<ChannelRole> GetAllChannelRoles();
         int GetVersion();
         void NewDay(string channelId);
         void NewDayForAll();
