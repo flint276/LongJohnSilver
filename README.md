@@ -19,5 +19,7 @@ So, in order for this to function you will need to build it in the directory of 
 In the root of the .dll directory, you will need a file called "config", this contains on each line:
 
 The token of your bot
+
 The API Key for the Weather Service (OpenWeather currently)
+
 The API Key for the GeoLocation Service (OpenCageData currently)
