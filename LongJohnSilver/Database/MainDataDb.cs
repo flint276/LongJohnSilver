@@ -587,36 +587,34 @@ namespace LongJohnSilver.Database
             RunQuery($"CREATE TABLE IF NOT EXISTS knockout(id INT PRIMARY KEY)");
             RunQuery($"CREATE TABLE IF NOT EXISTS kplayers(id INT PRIMARY KEY)");
             RunQuery($"CREATE TABLE IF NOT EXISTS channelroles(id INT PRIMARY KEY)");
+            RunQuery("CREATE TABLE IF NOT EXISTS gamertags(id INT PRIMARY KEY)");
             RunQuery($"CREATE TABLE IF NOT EXISTS version(ver INT)");
 
             // Populate Columns, catch and ignore any SQL errors as they are just advising the column already exists
-            try
-            {
-                RunUnsafeQuery($"ALTER TABLE contenders ADD name VARCHAR(200)");
-                RunUnsafeQuery($"ALTER TABLE contenders ADD score INT");
-                RunUnsafeQuery($"ALTER TABLE contenders ADD killer VARCHAR(50)");
-                RunUnsafeQuery($"ALTER TABLE contenders ADD epitaph VARCHAR(200)");
-                RunUnsafeQuery($"ALTER TABLE contenders ADD channel VARCHAR(50)");
+            RunUnsafeQuery($"ALTER TABLE contenders ADD name VARCHAR(200)");
+            RunUnsafeQuery($"ALTER TABLE contenders ADD score INT");
+            RunUnsafeQuery($"ALTER TABLE contenders ADD killer VARCHAR(50)");
+            RunUnsafeQuery($"ALTER TABLE contenders ADD epitaph VARCHAR(200)");
+            RunUnsafeQuery($"ALTER TABLE contenders ADD channel VARCHAR(50)");
 
-                RunUnsafeQuery($"ALTER TABLE knockout ADD name VARCHAR(200)");
-                RunUnsafeQuery($"ALTER TABLE knockout ADD status INT");
-                RunUnsafeQuery($"ALTER TABLE knockout ADD owner VARCHAR(50)");
-                RunUnsafeQuery($"ALTER TABLE knockout ADD channel VARCHAR(50)");
+            RunUnsafeQuery($"ALTER TABLE knockout ADD name VARCHAR(200)");
+            RunUnsafeQuery($"ALTER TABLE knockout ADD status INT");
+            RunUnsafeQuery($"ALTER TABLE knockout ADD owner VARCHAR(50)");
+            RunUnsafeQuery($"ALTER TABLE knockout ADD channel VARCHAR(50)");
 
-                RunUnsafeQuery($"ALTER TABLE kplayers ADD playerid VARCHAR(30)");
-                RunUnsafeQuery($"ALTER TABLE kplayers ADD turnsleft INT");
-                RunUnsafeQuery($"ALTER TABLE kplayers ADD lastplayed INT");
-                RunUnsafeQuery($"ALTER TABLE kplayers ADD channel VARCHAR(50)");
+            RunUnsafeQuery($"ALTER TABLE kplayers ADD playerid VARCHAR(30)");
+            RunUnsafeQuery($"ALTER TABLE kplayers ADD turnsleft INT");
+            RunUnsafeQuery($"ALTER TABLE kplayers ADD lastplayed INT");
+            RunUnsafeQuery($"ALTER TABLE kplayers ADD channel VARCHAR(50)");
 
-                RunUnsafeQuery($"ALTER TABLE channelroles ADD channel VARCHAR(50)");
-                RunUnsafeQuery($"ALTER TABLE channelroles ADD role VARCHAR(20)");
-            }
-            catch (SQLiteException)
-            {
-                Console.WriteLine("SQL Error");
-            }                           
-            
-                        
+            RunUnsafeQuery($"ALTER TABLE channelroles ADD channel VARCHAR(50)");
+            RunUnsafeQuery($"ALTER TABLE channelroles ADD role VARCHAR(20)");
+
+            RunUnsafeQuery($"ALTER TABLE gamertags ADD guild VARCHAR(50)");
+            RunUnsafeQuery($"ALTER TABLE gamertags ADD user VARCHAR(50)");
+            RunUnsafeQuery($"ALTER TABLE gamertags ADD service VARCHAR(20)");
+            RunUnsafeQuery($"ALTER TABLE gamertags ADD tag VARCHAR(200)");
+                                                                      
             // Update Version
             RunQuery($"DELETE FROM version");
             RunQuery($"INSERT INTO version (ver) VALUES ({CurrentVersion})");
