@@ -10,10 +10,16 @@ been before their last go.
 
 Purpose of the silly game is to determine which of the items is 'best'. Protect your favourites, try and eliminate your most hated.
 
+Additional functionality of a Weather Report function.
+
 INSTRUCTIONS
 
-So, in order for this to function you will need to build it in the directory of your choice and provide two extra files:
+So, in order for this to function you will need to build it in the directory of your choice and provide a config file.
 
-In the root of the .dll directory, you will need a file called "config", which simply contains the bottoken of your bot.
-Also in the root directory you will need a Data directory, and within this you will need to make a sqllite database.
-Populate it using the script create.sql attached in the project.
+In the root of the .dll directory, you will need a file called "config", this contains on each line:
+
+The token of your bot
+
+The API Key for the Weather Service (OpenWeather currently)
+
+The API Key for the GeoLocation Service (OpenCageData currently)
