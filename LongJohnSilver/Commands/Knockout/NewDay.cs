@@ -12,13 +12,12 @@ namespace LongJohnSilver.Commands.Knockout
         [Command("newday")]
         public async Task NewDayAsync()
         {
-            if (!ChannelCheck.IsKnockoutChannel(Context))
+            if (!StateChecker.IsKnockoutChannel(Context) || StateChecker.IsPrivateMessage(Context))
             {
                 return;
             }
 
-            SocketGuildUser CurrentUser = Context.User as SocketGuildUser;
-            if (!(CurrentUser.GuildPermissions.KickMembers))
+            if (!(StateChecker.IsChannelOp(Context)))
             {
                 await Context.Channel.SendMessageAsync(":x: You are not a bot moderator!");
                 return;

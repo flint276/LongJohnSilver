@@ -14,14 +14,8 @@ namespace LongJohnSilver.Commands.Knockout
         [Command("vote")]
         public async Task PlayAsync([Remainder]string input = "")
         {
-            if (!ChannelCheck.IsKnockoutChannel(Context))
+            if (!StateChecker.IsKnockoutChannel(Context) || StateChecker.IsPrivateMessage(Context))
             {
-                return;
-            }
-
-            if (Context.IsPrivate)
-            {
-                await Context.Channel.SendMessageAsync(":x: Please only vote in the main channel!");
                 return;
             }
 

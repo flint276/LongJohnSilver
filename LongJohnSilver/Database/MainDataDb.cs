@@ -17,7 +17,7 @@ namespace LongJohnSilver.Database
         public string DbLocation = $@"{CurrentDirectory}{Path.DirectorySeparatorChar}Data{Path.DirectorySeparatorChar}";
         public string DbPath;
         public string DbSource;
-        public int CurrentVersion = 3;
+        public int CurrentVersion = 6;
 
         /// <summary>
         /// Constructor, creates database if not present
@@ -59,6 +59,27 @@ namespace LongJohnSilver.Database
                 using (var command = new SQLiteCommand(sql, db))
                 {
                     command.ExecuteNonQuery();
+                }
+            }
+        }
+
+        public void RunUnsafeQuery(string sql)
+        {
+            using (var db = new SQLiteConnection(DbSource))
+            {
+                db.Open();
+
+                using (var command = new SQLiteCommand(sql, db))
+                {
+                    try
+                    {
+                        command.ExecuteNonQuery();
+                    }
+                    catch (SQLiteException)
+                    {
+                        Console.WriteLine("SQL Error");
+                    }
+                    
                 }
             }
         }
@@ -113,17 +134,17 @@ namespace LongJohnSilver.Database
         {
             var contenderList = new List<Contender>();
 
-            using (SQLiteConnection db = new SQLiteConnection(DbSource))
+            using (var db = new SQLiteConnection(DbSource))
             {
                 db.Open();
 
                 var sql = $"SELECT * FROM contenders WHERE channel = @param1";
-                using (SQLiteCommand command = new SQLiteCommand(sql, db))
+                using (var command = new SQLiteCommand(sql, db))
                 {
                     command.CommandType = CommandType.Text;
                     command.Parameters.Add(new SQLiteParameter("@param1", channelId));
 
-                    using (SQLiteDataReader reader = command.ExecuteReader())
+                    using (var reader = command.ExecuteReader())
                     {
                         while (reader.Read())
                         {
@@ -147,28 +168,28 @@ namespace LongJohnSilver.Database
         /// <returns></returns>
         public List<Knockout> GetAllKnockouts(string channelId)
         {
-            List<Knockout> knockoutList = new List<Knockout>();
+            var knockoutList = new List<Knockout>();
 
-            using (SQLiteConnection db = new SQLiteConnection(DbSource))
+            using (var db = new SQLiteConnection(DbSource))
             {
                 db.Open();
 
                 var sql = $"SELECT * FROM knockout WHERE channel = @param1";
-                using (SQLiteCommand command = new SQLiteCommand(sql, db))
+                using (var command = new SQLiteCommand(sql, db))
                 {
                     command.CommandType = CommandType.Text;
                     command.Parameters.Add(new SQLiteParameter("@param1", channelId));
 
-                    using (SQLiteDataReader reader = command.ExecuteReader())
+                    using (var reader = command.ExecuteReader())
                     {
                         while (reader.Read())
                         {
-                            string rname = (string)reader["name"];
-                            int rstatus = (int)reader["status"];
-                            string rowner = (string)reader["owner"];
-                            string rchannel = (string)reader["channel"];
+                            var rName = (string)reader["name"];
+                            var rStatus = (int)reader["status"];
+                            var rOwner = (string)reader["owner"];
+                            var rChannel = (string)reader["channel"];
 
-                            knockoutList.Add(new Knockout { Name = rname, Status = rstatus, Owner = rowner, Channel = rchannel });
+                            knockoutList.Add(new Knockout { Name = rName, Status = rStatus, Owner = rOwner, Channel = rChannel });
                         }
                     }
                 }
@@ -179,25 +200,25 @@ namespace LongJohnSilver.Database
 
         public List<Knockout> GetAllKnockouts()
         {
-            List<Knockout> knockoutList = new List<Knockout>();
+            var knockoutList = new List<Knockout>();
 
-            using (SQLiteConnection db = new SQLiteConnection(DbSource))
+            using (var db = new SQLiteConnection(DbSource))
             {
                 db.Open();
 
                 var sql = $"SELECT * FROM knockout";
-                using (SQLiteCommand command = new SQLiteCommand(sql, db))
+                using (var command = new SQLiteCommand(sql, db))
                 {
-                    using (SQLiteDataReader reader = command.ExecuteReader())
+                    using (var reader = command.ExecuteReader())
                     {
                         while (reader.Read())
                         {
-                            string rname = (string)reader["name"];
-                            int rstatus = (int)reader["status"];
-                            string rowner = (string)reader["owner"];
-                            string rchannel = (string)reader["channel"];
+                            var rName = (string)reader["name"];
+                            var rStatus = (int)reader["status"];
+                            var rOwner = (string)reader["owner"];
+                            var rChannel = (string)reader["channel"];
 
-                            knockoutList.Add(new Knockout { Name = rname, Status = rstatus, Owner = rowner, Channel = rchannel });
+                            knockoutList.Add(new Knockout { Name = rName, Status = rStatus, Owner = rOwner, Channel = rChannel });
                         }
                     }
                 }
@@ -213,27 +234,27 @@ namespace LongJohnSilver.Database
         /// <returns></returns>
         public List<KPlayer> GetAllPlayers(string channelId)
         {
-            List<KPlayer> playerList = new List<KPlayer>();
+            var playerList = new List<KPlayer>();
 
-            using (SQLiteConnection db = new SQLiteConnection(DbSource))
+            using (var db = new SQLiteConnection(DbSource))
             {
                 db.Open();
 
                 var sql = $"SELECT * FROM kplayers WHERE channel = @param1";
-                using (SQLiteCommand command = new SQLiteCommand(sql, db))
+                using (var command = new SQLiteCommand(sql, db))
                 {
                     command.CommandType = CommandType.Text;
                     command.Parameters.Add(new SQLiteParameter("@param1", channelId));
 
-                    using (SQLiteDataReader reader = command.ExecuteReader())
+                    using (var reader = command.ExecuteReader())
                     {
                         while (reader.Read())
                         {
-                            string rid = (string)reader["playerid"];
-                            int rturnsleft = (int)reader["turnsleft"];
-                            int rlastplayed = (int)reader["lastplayed"];
+                            var rId = (string)reader["playerid"];
+                            var rTurnsLeft = (int)reader["turnsleft"];
+                            var rLastPlayed = (int)reader["lastplayed"];
 
-                            playerList.Add(new KPlayer { PlayerId = rid, TurnsLeft = rturnsleft, LastPlayed = rlastplayed });
+                            playerList.Add(new KPlayer { PlayerId = rId, TurnsLeft = rTurnsLeft, LastPlayed = rLastPlayed });
                         }
                     }
                 }
@@ -275,6 +296,28 @@ namespace LongJohnSilver.Database
         public List<ChannelRole> GetAllChannelRoles()
         {
             var channelRoles = new List<ChannelRole>();
+            
+            using (var db = new SQLiteConnection(DbSource))
+            {
+                db.Open();
+
+                var sql = $"SELECT * FROM channelroles";
+                using (var command = new SQLiteCommand(sql, db))
+                {
+                    command.CommandType = CommandType.Text;
+
+                    using (var reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            var channel = (string)reader["channel"];
+                            var role = (string)reader["role"];
+
+                            channelRoles.Add(new ChannelRole{ Channel = channel, Role = role });
+                        }
+                    }
+                }
+            }
 
             return channelRoles;
         }
@@ -508,6 +551,33 @@ namespace LongJohnSilver.Database
 
         #endregion Knockout Methods
 
+        #region Role Methods
+
+        /// <summary>
+        /// Remove existing role for channel and add selected new one
+        /// </summary>
+        /// <param name="channelId"></param>
+        /// <param name="role"></param>
+        public void SetRoleForChannel(string channelId, string role)
+        {
+            object[] deleteParameters = {channelId};
+            object[] insertParameters = {channelId, role};
+            RunQuery("DELETE FROM channelroles WHERE channel = @param1", deleteParameters);
+            RunQuery("INSERT INTO channelroles (channel, role) VALUES (@param1, @param2)", insertParameters);
+        }
+
+        /// <summary>
+        /// Remove role from channel
+        /// </summary>
+        /// <param name="channelId"></param>
+        public void CleanRoleFromChannel(string channelId)
+        {
+            object[] parameters = {channelId};
+            RunQuery("DELETE FROM channelroles WHERE channel = @param1", parameters);
+        }
+
+        #endregion Role Methods
+        
         #region Database Creation Method
 
         public void CreateDatabase()
@@ -522,28 +592,30 @@ namespace LongJohnSilver.Database
             // Populate Columns, catch and ignore any SQL errors as they are just advising the column already exists
             try
             {
-                RunQuery($"ALTER TABLE contenders ADD name VARCHAR(200)");
-                RunQuery($"ALTER TABLE contenders ADD score INT");
-                RunQuery($"ALTER TABLE contenders ADD killer VARCHAR(50)");
-                RunQuery($"ALTER TABLE contenders ADD epitaph VARCHAR(200)");
-                RunQuery($"ALTER TABLE contenders ADD channel VARCHAR(50)");
+                RunUnsafeQuery($"ALTER TABLE contenders ADD name VARCHAR(200)");
+                RunUnsafeQuery($"ALTER TABLE contenders ADD score INT");
+                RunUnsafeQuery($"ALTER TABLE contenders ADD killer VARCHAR(50)");
+                RunUnsafeQuery($"ALTER TABLE contenders ADD epitaph VARCHAR(200)");
+                RunUnsafeQuery($"ALTER TABLE contenders ADD channel VARCHAR(50)");
 
-                RunQuery($"ALTER TABLE knockout ADD name VARCHAR(200)");
-                RunQuery($"ALTER TABLE knockout ADD status INT");
-                RunQuery($"ALTER TABLE knockout ADD owner VARCHAR(50)");
-                RunQuery($"ALTER TABLE knockout ADD channel VARCHAR(50)");
+                RunUnsafeQuery($"ALTER TABLE knockout ADD name VARCHAR(200)");
+                RunUnsafeQuery($"ALTER TABLE knockout ADD status INT");
+                RunUnsafeQuery($"ALTER TABLE knockout ADD owner VARCHAR(50)");
+                RunUnsafeQuery($"ALTER TABLE knockout ADD channel VARCHAR(50)");
 
-                RunQuery($"ALTER TABLE kplayers ADD playerid VARCHAR(30)");
-                RunQuery($"ALTER TABLE kplayers ADD turnsleft INT");
-                RunQuery($"ALTER TABLE kplayers ADD lastplayed INT");
-                RunQuery($"ALTER TABLE kplayers ADD channel VARCHAR(50)");
+                RunUnsafeQuery($"ALTER TABLE kplayers ADD playerid VARCHAR(30)");
+                RunUnsafeQuery($"ALTER TABLE kplayers ADD turnsleft INT");
+                RunUnsafeQuery($"ALTER TABLE kplayers ADD lastplayed INT");
+                RunUnsafeQuery($"ALTER TABLE kplayers ADD channel VARCHAR(50)");
 
-                RunQuery($"ALTER TABLE channelroles ADD channel VARCHAR(50)");
-                RunQuery($"ALTER TABLE channelroles ADD role VARCHAR(20)");
+                RunUnsafeQuery($"ALTER TABLE channelroles ADD channel VARCHAR(50)");
+                RunUnsafeQuery($"ALTER TABLE channelroles ADD role VARCHAR(20)");
             }
             catch (SQLiteException)
-            {                
-            }
+            {
+                Console.WriteLine("SQL Error");
+            }                           
+            
                         
             // Update Version
             RunQuery($"DELETE FROM version");

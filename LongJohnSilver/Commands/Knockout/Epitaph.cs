@@ -11,14 +11,8 @@ namespace LongJohnSilver.Commands.Knockout
         [Command("epitaph")]
         public async Task EpitaphAsync([Remainder]string input = "")
         {
-            if (!ChannelCheck.IsKnockoutChannel(Context))
+            if (!StateChecker.IsKnockoutChannel(Context) || StateChecker.IsPrivateMessage(Context))
             {
-                return;
-            }
-
-            if (Context.IsPrivate)
-            {
-                await Context.Channel.SendMessageAsync("Please use this command in the knockout channel!");
                 return;
             }
 

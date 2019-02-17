@@ -17,14 +17,6 @@ namespace LongJohnSilver.Commands.Knockout
                 return;
             }
 
-            var currentUser = Context.User as SocketGuildUser;
-
-            if (!currentUser.GuildPermissions.KickMembers)
-            {
-                await Context.Channel.SendMessageAsync(":x: You are not a bot moderator!");
-                return;
-            }
-
             if (Context.IsPrivate)
             {
                 await Context.Channel.SendMessageAsync("Please use this command in the knockout channel!");
@@ -32,6 +24,11 @@ namespace LongJohnSilver.Commands.Knockout
             }
 
             var knockouts = new KnockOutHandler(Context.Channel.Id, Factory.GetDatabase());
+
+            if (Context.User.Id != knockouts.KnockoutCreatorUlong)
+            {
+                await Context.Channel.SendMessageAsync(":x: You are no the creator of this knockout!");
+            }
 
             switch (knockouts.KnockoutStatus)
             {

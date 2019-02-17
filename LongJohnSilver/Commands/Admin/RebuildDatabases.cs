@@ -16,8 +16,8 @@ namespace LongJohnSilver.Commands.Admin
                 return;
             }
 
-            SocketGuildUser CurrentUser = Context.User as SocketGuildUser;
-            if (!(CurrentUser.GuildPermissions.KickMembers))
+            var currentUser = Context.User as SocketGuildUser;
+            if (!(currentUser.GuildPermissions.KickMembers))
             {
                 await Context.Channel.SendMessageAsync(":x: You are not a bot moderator!");
                 return;

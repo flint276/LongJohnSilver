@@ -8,6 +8,7 @@ namespace LongJohnSilver.Database
         void AddKnockoutTitle(string knockoutTitle, string channelId);
         void AddPlayerToKnockout(string userIdString, string channelId);
         void ChangeScore(string contenderName, int modifier, string channelId);
+        void CleanRoleFromChannel(string channelId);
         void CreateDatabase();
         void CreateNewKnockout(string userId, string channelId);
         void EmptyKnockoutDatabase(string channelId);
@@ -32,6 +33,7 @@ namespace LongJohnSilver.Database
         void SetKillerForContender(string userIdString, string contenderName, string channelId);
         void SetKnockoutToActive(string channelId);
         void SetKnockoutToEnded(string channelId);
-        void SetScoreForContender(int value, string contenderName, string channelId);
+        void SetRoleForChannel(string channelId, string role);
+        void SetScoreForContender(int value, string contenderName, string channelId);      
     }
 }

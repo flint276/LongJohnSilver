@@ -12,14 +12,8 @@ namespace LongJohnSilver.Commands.Knockout
         [Command("showknockout")]
         public async Task EmbedKnockoutAsync()
         {
-            if (!ChannelCheck.IsKnockoutChannel(Context))
+            if (!StateChecker.IsKnockoutChannel(Context) || StateChecker.IsPrivateMessage(Context))
             {
-                return;
-            }
-
-            if (Context.IsPrivate)
-            {
-                await Context.Channel.SendMessageAsync("Please use this command in the knockout channel!");
                 return;
             }
 

@@ -11,9 +11,8 @@ namespace LongJohnSilver.Commands.Knockout
         [Command("begin")]
         public async Task BeginKnockoutAsync()
         {
-            if (!Context.IsPrivate)
+            if (!StateChecker.IsPrivateMessage(Context))
             {
-                //await Context.Channel.SendMessageAsync(":x: Command Only for Knockout Creation and only for use in PM with Bot!");
                 return;
             }
 

@@ -10,9 +10,8 @@ namespace LongJohnSilver.Commands.Knockout
         [Command("remove")]
         public async Task RemoveContenderAsync([Remainder]string input = "")
         {
-            if (!Context.IsPrivate)
+            if (!StateChecker.IsPrivateMessage(Context))
             {
-                //await Context.Channel.SendMessageAsync(":x: Command Only for Knockout Creation and only for use in PM with Bot!");
                 return;
             }
 
