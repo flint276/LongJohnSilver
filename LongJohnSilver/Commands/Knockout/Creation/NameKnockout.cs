@@ -3,7 +3,7 @@ using Discord.Commands;
 using LongJohnSilver.Database;
 using LongJohnSilver.Statics;
 
-namespace LongJohnSilver.Commands.Knockout
+namespace LongJohnSilver.Commands.Knockout.Creation
 {
     public class NameKnockout : ModuleBase<SocketCommandContext>
     {

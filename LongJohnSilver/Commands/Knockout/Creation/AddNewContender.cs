@@ -3,20 +3,32 @@ using Discord.Commands;
 using LongJohnSilver.Database;
 using LongJohnSilver.Statics;
 
-namespace LongJohnSilver.Commands.Knockout
+namespace LongJohnSilver.Commands.Knockout.Creation
 {
-    public class AbortKnockoutCreation : ModuleBase<SocketCommandContext>
+    public class AddNewContender : ModuleBase<SocketCommandContext>
     {
-        [Command("quit")]
-        public async Task AbortKnockoutAsync()
+        [Command("add")]
+        public async Task AddKnockoutAsync([Remainder]string input = "")
         {
             if (!StateChecker.IsPrivateMessage(Context))
             {
                 return;
             }
 
+            if (input == "")
+            {
+                await Context.Channel.SendMessageAsync(":x: No Value Entered!");
+                return;
+            }
+
+            if (input.Contains("/"))
+            {
+                await Context.Channel.SendMessageAsync(":x: I told you that you couldn't choose Face/Off! (or whatever other film you've found with a / in it. V/H/S maybe...)");
+                return;
+            }
+
             var channelId = KnockOutHandler.ChannelForUser(Context.User.Id, Factory.GetDatabase());
-            
+
             if (channelId == 0)
             {
                 await Context.Channel.SendMessageAsync(":x: You are not making a knockout at the moment!");
@@ -34,13 +46,13 @@ namespace LongJohnSilver.Commands.Knockout
             switch (knockouts.KnockoutStatus)
             {
                 case 1:
-                    await Context.Channel.SendMessageAsync(":x: You are not making a knockout at the moment!");
+                    await Context.Channel.SendMessageAsync(":x: No Knockout is being created at the moment!");
                     return;
                 case 2:
-                    await Context.Channel.SendMessageAsync(":x: You are not making a knockout at the moment!");
+                    await Context.Channel.SendMessageAsync(":x: This knockout has already started! No more changes!");
                     return;
                 case 3:
-                    await Context.Channel.SendMessageAsync(":x: You are not making a knockout at the moment!");
+                    await Context.Channel.SendMessageAsync(":x: This knockout is finished, please feel free to create a new one!");
                     return;
                 case 4:
                     break;
@@ -48,14 +60,10 @@ namespace LongJohnSilver.Commands.Knockout
                     await Context.Channel.SendMessageAsync(":x: Right. This shouldn't have happened. Someone call RedFlint.");
                     return;
             }
+               
+            knockouts.AddNewContender(input);
 
-            var chnl = Context.Client.GetChannel(knockouts.KnockoutChannelUlong) as Discord.IMessageChannel;
-                        
-            knockouts.EmptyDatabase();
-            
-            await Context.Channel.SendMessageAsync("Database cleared!");
-
-            await chnl.SendMessageAsync("Knockout Creation Aborted By Creator. You are free to create a new knockout.");
+            await Context.Channel.SendMessageAsync($"You have added the contender **{input}**");
         }
     }
 }

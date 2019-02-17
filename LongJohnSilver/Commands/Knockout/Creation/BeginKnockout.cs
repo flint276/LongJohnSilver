@@ -4,7 +4,7 @@ using LongJohnSilver.Database;
 using LongJohnSilver.Embeds;
 using LongJohnSilver.Statics;
 
-namespace LongJohnSilver.Commands.Knockout
+namespace LongJohnSilver.Commands.Knockout.Creation
 {
     public class BeginKnockout : ModuleBase<SocketCommandContext>
     {

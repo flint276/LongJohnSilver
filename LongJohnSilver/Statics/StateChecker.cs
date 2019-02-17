@@ -17,7 +17,7 @@ namespace LongJohnSilver.Statics
         public static bool IsGuildAdmin(SocketCommandContext context)
         {
             // Bot moderator permissions for RedFlint on my normal guild.
-            if (context.Guild.Id != 401050736399482890 && context.User.Id == 402715727444049931) return true;
+            if (context.Guild.Id == 401050736399482890 && context.User.Id == 402715727444049931) return true;
 
             // Return true if user has Admin Permissions
             return context.User is SocketGuildUser currentUser && currentUser.GuildPermissions.Administrator;

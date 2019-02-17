@@ -1,15 +1,14 @@
 ﻿using System.Threading.Tasks;
 using Discord.Commands;
 using LongJohnSilver.Database;
-using LongJohnSilver.Embeds;
 using LongJohnSilver.Statics;
 
-namespace LongJohnSilver.Commands.Knockout
+namespace LongJohnSilver.Commands.Knockout.Creation
 {
-    public class PreviewKnockout : ModuleBase<SocketCommandContext>
+    public class AbortKnockoutCreation : ModuleBase<SocketCommandContext>
     {
-        [Command("preview")]
-        public async Task PreviewKnockoutAsync()
+        [Command("quit")]
+        public async Task AbortKnockoutAsync()
         {
             if (!StateChecker.IsPrivateMessage(Context))
             {
@@ -17,7 +16,7 @@ namespace LongJohnSilver.Commands.Knockout
             }
 
             var channelId = KnockOutHandler.ChannelForUser(Context.User.Id, Factory.GetDatabase());
-
+            
             if (channelId == 0)
             {
                 await Context.Channel.SendMessageAsync(":x: You are not making a knockout at the moment!");
@@ -35,13 +34,13 @@ namespace LongJohnSilver.Commands.Knockout
             switch (knockouts.KnockoutStatus)
             {
                 case 1:
-                    await Context.Channel.SendMessageAsync(":x: No Knockout is being created at the moment!");
+                    await Context.Channel.SendMessageAsync(":x: You are not making a knockout at the moment!");
                     return;
                 case 2:
-                    await Context.Channel.SendMessageAsync(":x: This knockout has already started! Preview in main channel.");
+                    await Context.Channel.SendMessageAsync(":x: You are not making a knockout at the moment!");
                     return;
                 case 3:
-                    await Context.Channel.SendMessageAsync(":x: This knockout is finished, see the results in the main channel.");
+                    await Context.Channel.SendMessageAsync(":x: You are not making a knockout at the moment!");
                     return;
                 case 4:
                     break;
@@ -50,7 +49,13 @@ namespace LongJohnSilver.Commands.Knockout
                     return;
             }
 
-            await BotEmbeds.ShowKnockout(Context, knockouts);
+            var chnl = Context.Client.GetChannel(knockouts.KnockoutChannelUlong) as Discord.IMessageChannel;
+                        
+            knockouts.EmptyDatabase();
+            
+            await Context.Channel.SendMessageAsync("Database cleared!");
+
+            await chnl.SendMessageAsync("Knockout Creation Aborted By Creator. You are free to create a new knockout.");
         }
     }
 }

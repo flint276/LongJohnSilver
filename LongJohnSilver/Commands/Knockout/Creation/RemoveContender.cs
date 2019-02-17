@@ -1,18 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Discord.Commands;
 using LongJohnSilver.Database;
 using LongJohnSilver.Statics;
 
-namespace LongJohnSilver.Commands
+namespace LongJohnSilver.Commands.Knockout.Creation
 {
-    public class AddNewContender : ModuleBase<SocketCommandContext>
+    public class RemoveContender : ModuleBase<SocketCommandContext>
     {
-        [Command("add")]
-        public async Task AddKnockoutAsync([Remainder]string input = "")
+        [Command("remove")]
+        public async Task RemoveContenderAsync([Remainder]string input = "")
         {
             if (!StateChecker.IsPrivateMessage(Context))
             {
@@ -22,12 +18,6 @@ namespace LongJohnSilver.Commands
             if (input == "")
             {
                 await Context.Channel.SendMessageAsync(":x: No Value Entered!");
-                return;
-            }
-
-            if (input.Contains("/"))
-            {
-                await Context.Channel.SendMessageAsync(":x: I told you that you couldn't choose Face/Off! (or whatever other film you've found with a / in it. V/H/S maybe...)");
                 return;
             }
 
@@ -64,10 +54,14 @@ namespace LongJohnSilver.Commands
                     await Context.Channel.SendMessageAsync(":x: Right. This shouldn't have happened. Someone call RedFlint.");
                     return;
             }
-               
-            knockouts.AddNewContender(input);
 
-            await Context.Channel.SendMessageAsync($"You have added the contender **{input}**");
+            if (!knockouts.DeleteContender(input))
+            {
+                await Context.Channel.SendMessageAsync($":x: No Exact Match Found for **{input}**. Please Try Again");
+                return;
+            }
+
+            await Context.Channel.SendMessageAsync($"You have removed the contender **{input}**");
         }
     }
 }

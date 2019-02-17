@@ -1,23 +1,18 @@
 ﻿using System.Threading.Tasks;
 using Discord.Commands;
 using LongJohnSilver.Database;
+using LongJohnSilver.Embeds;
 using LongJohnSilver.Statics;
 
-namespace LongJohnSilver.Commands.Knockout
+namespace LongJohnSilver.Commands.Knockout.Creation
 {
-    public class RemoveContender : ModuleBase<SocketCommandContext>
+    public class PreviewKnockout : ModuleBase<SocketCommandContext>
     {
-        [Command("remove")]
-        public async Task RemoveContenderAsync([Remainder]string input = "")
+        [Command("preview")]
+        public async Task PreviewKnockoutAsync()
         {
             if (!StateChecker.IsPrivateMessage(Context))
             {
-                return;
-            }
-
-            if (input == "")
-            {
-                await Context.Channel.SendMessageAsync(":x: No Value Entered!");
                 return;
             }
 
@@ -43,10 +38,10 @@ namespace LongJohnSilver.Commands.Knockout
                     await Context.Channel.SendMessageAsync(":x: No Knockout is being created at the moment!");
                     return;
                 case 2:
-                    await Context.Channel.SendMessageAsync(":x: This knockout has already started! No more changes!");
+                    await Context.Channel.SendMessageAsync(":x: This knockout has already started! Preview in main channel.");
                     return;
                 case 3:
-                    await Context.Channel.SendMessageAsync(":x: This knockout is finished, please feel free to create a new one!");
+                    await Context.Channel.SendMessageAsync(":x: This knockout is finished, see the results in the main channel.");
                     return;
                 case 4:
                     break;
@@ -55,13 +50,7 @@ namespace LongJohnSilver.Commands.Knockout
                     return;
             }
 
-            if (!knockouts.DeleteContender(input))
-            {
-                await Context.Channel.SendMessageAsync($":x: No Exact Match Found for **{input}**. Please Try Again");
-                return;
-            }
-
-            await Context.Channel.SendMessageAsync($"You have removed the contender **{input}**");
+            await BotEmbeds.ShowKnockout(Context, knockouts);
         }
     }
 }

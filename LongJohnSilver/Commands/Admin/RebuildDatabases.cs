@@ -11,21 +11,14 @@ namespace LongJohnSilver.Commands.Admin
         [Command("rebuild")]
         public async Task RebuildDatabasesAsync()
         {
-            if (!ChannelCheck.IsKnockoutChannel(Context))
+            if (!StateChecker.IsKnockoutChannel(Context) || StateChecker.IsPrivateMessage(Context))
             {
                 return;
             }
 
-            var currentUser = Context.User as SocketGuildUser;
-            if (!(currentUser.GuildPermissions.KickMembers))
+            if (!StateChecker.IsChannelOp(Context))
             {
-                await Context.Channel.SendMessageAsync(":x: You are not a bot moderator!");
-                return;
-            }
-
-            if (Context.IsPrivate)
-            {
-                await Context.Channel.SendMessageAsync("Please use this command in the knockout channel!");
+                await Context.Channel.SendMessageAsync(":x: You are not a channel op!");
                 return;
             }
 

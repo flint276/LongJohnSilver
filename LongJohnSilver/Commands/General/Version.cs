@@ -10,7 +10,7 @@ namespace LongJohnSilver.Commands.General
         public async Task VersionAsync()
         {
             var db = Factory.GetDatabase();
-            await Context.Channel.SendMessageAsync($"0.9h - DB: {db.GetVersion()}");
+            await Context.Channel.SendMessageAsync($"1.0h - DB: {db.GetVersion()}");
         }
 
     }
