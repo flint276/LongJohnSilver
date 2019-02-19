@@ -3,6 +3,7 @@ using System.Data;
 using System.Collections.Generic;
 using System.Data.SQLite;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using NUnit.Framework;
 
@@ -39,7 +40,10 @@ namespace LongJohnSilver.Database
                 CreateDatabase();                
             }
 
-            if (CurrentVersion > GetVersion())
+            var versionData = GetData("SELECT * FROM version");
+            var version = (int)versionData.First()["ver"];
+
+            if (CurrentVersion > version)
             {
                 CreateDatabase();
             }
@@ -82,7 +86,7 @@ namespace LongJohnSilver.Database
                     
                 }
             }
-        }
+        }        
 
         /// <summary>
         /// Run a simple statement with parameters
@@ -121,7 +125,95 @@ namespace LongJohnSilver.Database
                 }
             }
         }
-        #endregion SQL Comman Methods
+
+        public List<Dictionary<string, object>> GetData(string sql)
+        {
+            var dataResults = new List<Dictionary<string, object>>();
+
+            using (var db = new SQLiteConnection(DbSource))
+            {
+                db.Open();
+
+                using (var command = new SQLiteCommand(sql, db))
+                {
+                    command.CommandType = CommandType.Text;
+
+                    using (var reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            var dataDictionary = new Dictionary<string, object>();
+
+                            for (var i = 0; i < reader.FieldCount; i++)
+                            {
+                                var n = reader.GetName(i);
+                                var v = reader.GetValue(i);
+
+                                dataDictionary[n] = v;
+                            }
+
+                            dataResults.Add(dataDictionary);
+                        }
+                    }
+                }
+            }
+
+            return dataResults;
+        }
+
+        public List<Dictionary<string, object>> GetData(string sql, object[] parameters)
+        {
+            var dataResults = new List<Dictionary<string, object>>();
+            
+            // Validate Parameters
+            var paramNumber = 0;
+            foreach (var unused in parameters)
+            {
+                paramNumber += 1;
+                if (!sql.Contains($"@param{paramNumber}"))
+                {
+                    throw new Exception("Corrupt SQL Parameters");
+                }
+            }
+
+            paramNumber = 0;
+
+            using (var db = new SQLiteConnection(DbSource))
+            {
+                db.Open();
+
+                using (var command = new SQLiteCommand(sql, db))
+                {
+                    command.CommandType = CommandType.Text;
+                    foreach (var s in parameters)
+                    {
+                        paramNumber += 1;
+                        command.Parameters.Add(new SQLiteParameter($"@param{paramNumber}", s));
+                    }
+
+                    using (var reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            var dataDictionary = new Dictionary<string, object>();
+
+                            for (var i = 0; i < reader.FieldCount; i++)
+                            {
+                                var n = reader.GetName(i);
+                                var v = reader.GetValue(i);
+
+                                dataDictionary[n] = v;
+                            }
+
+                            dataResults.Add(dataDictionary);
+                        }
+                    }
+                }
+            }
+
+            return dataResults;
+        }
+        #endregion SQL Command Methods
 
         #region Data Download Methods
 
@@ -583,12 +675,12 @@ namespace LongJohnSilver.Database
         public void CreateDatabase()
         {
             // Create Tables
-            RunQuery($"CREATE TABLE IF NOT EXISTS contenders(id INT PRIMARY KEY)");
-            RunQuery($"CREATE TABLE IF NOT EXISTS knockout(id INT PRIMARY KEY)");
-            RunQuery($"CREATE TABLE IF NOT EXISTS kplayers(id INT PRIMARY KEY)");
-            RunQuery($"CREATE TABLE IF NOT EXISTS channelroles(id INT PRIMARY KEY)");
-            RunQuery("CREATE TABLE IF NOT EXISTS gamertags(id INT PRIMARY KEY)");
-            RunQuery($"CREATE TABLE IF NOT EXISTS version(ver INT)");
+            RunQuery($"CREATE TABLE IF NOT EXISTS contenders(id INTEGER PRIMARY KEY)");
+            RunQuery($"CREATE TABLE IF NOT EXISTS knockout(id INTEGER PRIMARY KEY)");
+            RunQuery($"CREATE TABLE IF NOT EXISTS kplayers(id INTEGER PRIMARY KEY)");
+            RunQuery($"CREATE TABLE IF NOT EXISTS channelroles(id INTEGER PRIMARY KEY)");
+            RunQuery("CREATE TABLE IF NOT EXISTS gamertags(id INTEGER PRIMARY KEY)");
+            RunQuery($"CREATE TABLE IF NOT EXISTS version(id INTEGER PRIMARY KEY)");
 
             // Populate Columns, catch and ignore any SQL errors as they are just advising the column already exists
             RunUnsafeQuery($"ALTER TABLE contenders ADD name VARCHAR(200)");
@@ -614,6 +706,8 @@ namespace LongJohnSilver.Database
             RunUnsafeQuery($"ALTER TABLE gamertags ADD user VARCHAR(50)");
             RunUnsafeQuery($"ALTER TABLE gamertags ADD service VARCHAR(20)");
             RunUnsafeQuery($"ALTER TABLE gamertags ADD tag VARCHAR(200)");
+
+            RunUnsafeQuery($"ALTER TABLE version ADD ver INT");
                                                                       
             // Update Version
             RunQuery($"DELETE FROM version");

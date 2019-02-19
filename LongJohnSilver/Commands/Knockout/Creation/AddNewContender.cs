@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Discord.Commands;
 using LongJohnSilver.Database;
+using LongJohnSilver.MethodsKnockout;
 using LongJohnSilver.Statics;
 
 namespace LongJohnSilver.Commands.Knockout.Creation
@@ -27,23 +28,15 @@ namespace LongJohnSilver.Commands.Knockout.Creation
                 return;
             }
 
-            var channelId = KnockOutHandler.ChannelForUser(Context.User.Id, Factory.GetDatabase());
+            var kModel = new KnockoutModel(Context);
 
-            if (channelId == 0)
+            if (kModel.GameChannel == 0)
             {
                 await Context.Channel.SendMessageAsync(":x: You are not making a knockout at the moment!");
                 return;
             }
 
-            var knockouts = new KnockOutHandler(channelId, Factory.GetDatabase());
-
-            if (knockouts.KnockoutCreatorUlong != Context.User.Id)
-            {
-                await Context.Channel.SendMessageAsync(":x: You are not making a knockout at the moment!");
-                return;
-            }
-
-            switch (knockouts.KnockoutStatus)
+            switch (kModel.KnockoutStatus)
             {
                 case 1:
                     await Context.Channel.SendMessageAsync(":x: No Knockout is being created at the moment!");
@@ -61,7 +54,7 @@ namespace LongJohnSilver.Commands.Knockout.Creation
                     return;
             }
                
-            knockouts.AddNewContender(input);
+            kModel.AddNewContender(input);
 
             await Context.Channel.SendMessageAsync($"You have added the contender **{input}**");
         }

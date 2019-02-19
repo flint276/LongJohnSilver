@@ -17,6 +17,8 @@ namespace LongJohnSilver.Database
         List<Knockout> GetAllKnockouts(string channelId);
         List<KPlayer> GetAllPlayers(string channelId);
         List<ChannelRole> GetAllChannelRoles();
+        List<Dictionary<string, object>> GetData(string sql);
+        List<Dictionary<string, object>> GetData(string sql, object[] parameters);
         int GetVersion();
         void NewDay(string channelId);
         void NewDayForAll();
@@ -29,6 +31,7 @@ namespace LongJohnSilver.Database
         void ResetPlayersTable(string channelId);
         void RunQuery(string sql);
         void RunQuery(string sql, object[] parameters);
+        void RunUnsafeQuery(string sql);
         void SetEpitaphForContender(string contenderName, string epitaph, string channelId);
         void SetKillerForContender(string userIdString, string contenderName, string channelId);
         void SetKnockoutToActive(string channelId);

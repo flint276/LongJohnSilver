@@ -12,7 +12,7 @@ namespace LongJohnSilver.Commands.Knockout
         [Command ("snap")]
         public async Task HalveAsync()
         {
-            if (!ChannelCheck.IsKnockoutChannel(Context))
+            if (!StateChecker.IsKnockoutChannel(Context))
             {
                 return;
             }
