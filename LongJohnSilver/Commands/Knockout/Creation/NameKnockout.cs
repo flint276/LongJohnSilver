@@ -1,6 +1,7 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Discord.Commands;
-using LongJohnSilver.Database;
+using LongJohnSilver.MethodsKnockout;
 using LongJohnSilver.Statics;
 
 namespace LongJohnSilver.Commands.Knockout.Creation
@@ -10,6 +11,8 @@ namespace LongJohnSilver.Commands.Knockout.Creation
         [Command ("name")]
         public async Task AddKnockoutAsync([Remainder]string input = "")
         {
+            var kModel = KnockoutModel.ForUser(Context.User.Id);
+
             if (!StateChecker.IsPrivateMessage(Context))
             {
                 return;
@@ -19,45 +22,49 @@ namespace LongJohnSilver.Commands.Knockout.Creation
             {
                 await Context.Channel.SendMessageAsync(":x: No Value Entered!");
                 return;
-            }
+            }            
 
-            var channelId = KnockOutHandler.ChannelForUser(Context.User.Id, Factory.GetDatabase());
-
-            if (channelId == 0)
+            if (kModel.GameChannel == 0)
             {
                 await Context.Channel.SendMessageAsync(":x: You are not making a knockout at the moment!");
                 return;
             }
 
-            var knockouts = new KnockOutHandler(channelId, Factory.GetDatabase());
-
-            if (knockouts.KnockoutCreatorUlong != Context.User.Id)
+            switch (kModel.KnockoutStatus)
             {
-                await Context.Channel.SendMessageAsync(":x: You are not making a knockout at the moment!");
-                return;
-            }
-
-            switch (knockouts.KnockoutStatus)
-            {
-                case 1:
+                case KnockoutStatus.NoKnockout:
                     await Context.Channel.SendMessageAsync(":x: No Knockout is being created at the moment!");
                     return;
-                case 2:
+                case KnockoutStatus.KnockoutInProgress:
                     await Context.Channel.SendMessageAsync(":x: This knockout has already started! No more changes!");
                     return;
-                case 3:
+                case KnockoutStatus.KnockoutFinished:
                     await Context.Channel.SendMessageAsync(":x: This knockout is finished, please feel free to create a new one!");
                     return;
-                case 4:
+                case KnockoutStatus.KnockoutUnderConstruction:
                     break;
                 default:
-                    await Context.Channel.SendMessageAsync(":x: Right. This shouldn't have happened. Someone call RedFlint.");
-                    return;
+                    throw new ArgumentOutOfRangeException();
+            }
+            
+            var modResult = kModel.SetKnockoutName(input);
+
+            switch (modResult)
+            {
+                case ModificationResult.ValueIsEmpty:
+                    await Context.Channel.SendMessageAsync(":x: No Value Entered!");
+                    break;
+                case ModificationResult.Success:
+                    await Context.Channel.SendMessageAsync($"You have named your knockout: {input}");
+                    break;
+                case ModificationResult.IllegalCharacter:
+                case ModificationResult.Duplicate:
+                case ModificationResult.Missing:
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
 
-            knockouts.ChangeKnockoutTitle(input);
-
-            await Context.Channel.SendMessageAsync($"You have named your knockout: {input}");
+            
         }
     }
 }

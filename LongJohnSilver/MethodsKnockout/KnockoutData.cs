@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using Discord.Audio.Streams;
 using LongJohnSilver.Database;
@@ -16,14 +17,12 @@ namespace LongJohnSilver.MethodsKnockout
 
         public string KnockoutChannel { get; set; }
 
-        public KnockoutData(ulong channelId)
+        public KnockoutData(string channelId)
         {
-            KnockoutChannel = channelId.ToString();
-
-            var channelIdString = channelId.ToString();
-            Contenders = GetAllContenders(channelIdString);
-            Players = GetAllPlayers(channelIdString);
-            Game = GetGame(channelIdString);
+            KnockoutChannel = channelId;            
+            Contenders = GetAllContenders(KnockoutChannel);
+            Players = GetAllPlayers(KnockoutChannel);
+            Game = GetGame(KnockoutChannel);
         }        
 
         private static List<KnockoutContender> GetAllContenders(string channelId)
@@ -44,20 +43,67 @@ namespace LongJohnSilver.MethodsKnockout
             return gameList?.Find(x => x.Channel == channelId);
         }
 
-        public static ulong GetGameChannelForUser(ulong userId)
+        public static string GetGameChannelForUser(string userId)
         {
-            var userIdString = userId.ToString();
             var gameList = KnockoutGame.SelectAll();
-            return gameList.Count == 0 ? 0 : Convert.ToUInt64(gameList.Find(x => x.Owner == userIdString).Channel);
+            return gameList.Count == 0 ? null : gameList.Find(x => x.Owner == userId).Channel;
         }
 
-        public ulong GameChannel => Game?.Channel == null ? 0 : Convert.ToUInt64(Game.Channel);
-
-        public int KnockoutStatus => Game.Status;
-
-        public string NewContender
+        // Entire Data Commands
+        public void DeleteAllData()
         {
-            set => Contenders.Add(new KnockoutContender(value, 3, "", "", KnockoutChannel));
+            Contenders.ForEach(x => x.Delete());
+            Contenders.Clear();
+
+            Players.ForEach(x => x.Delete());
+            Players.Clear();
+
+            Game.Delete();
+            Game = null;
+
+            KnockoutChannel = "";
         }
+
+        // Knockout Contender       
+        public void AddContender(string input)
+        {
+            Contenders.Add(new KnockoutContender(input, 3, "", "", KnockoutChannel));
+        }
+        public List<string> AllContenderNames => 
+            Contenders.Select(x => x.Name).ToList();
+        public Dictionary<string, int> AllContendersWithScore => 
+            Contenders.ToDictionary(x => x.Name, x => x.Score);
+        public Dictionary<string, string> AllContendersWithEpitaph => 
+            Contenders.ToDictionary(x => x.Name, x => x.Epitaph);
+        public void DeleteContender(string input)
+        {
+            Contenders.FindAll(x => x.Name == input).ForEach(x => x.Delete());
+            Contenders.RemoveAll(x => x.Name == input);
+        }
+
+        // Knockout Player
+        public List<string> AllPlayers => 
+            Players.Select(x => x.PlayerId).ToList();
+        public Dictionary<string, int> AllPlayersWithTurnsLeftValue =>
+            Players.ToDictionary(x => x.PlayerId, x => x.TurnsLeft);
+        public Dictionary<string, int> AllPlayersWithLastPlayedValue =>
+            Players.ToDictionary(x => x.PlayerId, x => x.LastPlayed);
+        
+        // Knockout Game
+        public string GameChannel => 
+            Game?.Channel;        
+        public string KnockoutName
+        {
+            get => Game?.Name;
+            set => Game.Name = value;
+        }
+        public string KnockoutOwner => 
+            Game?.Owner;
+        public int KnockoutStatus => 
+            Game.Status;
+
+
+
+
     }
 }

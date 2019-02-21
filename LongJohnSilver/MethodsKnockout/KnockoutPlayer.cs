@@ -124,7 +124,7 @@ namespace LongJohnSilver.MethodsKnockout
             Id = (long)dataResults.First()["id"];
         }
 
-        private void Delete()
+        public void Delete()
         {
             MainDataDb.RunQuery("DELETE FROM kplayers WHERE id = @param1", IdParameters);
         }
