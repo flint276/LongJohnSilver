@@ -2,7 +2,7 @@
 using Discord.Commands;
 using LongJohnSilver.Embeds;
 using LongJohnSilver.Enums;
-using LongJohnSilver.MethodsKnockout;
+using LongJohnSilver.Database.DataMethodsKnockout;
 using LongJohnSilver.Statics;
 
 namespace LongJohnSilver.Commands.Knockout.Creation

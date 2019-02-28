@@ -13,7 +13,7 @@ using LongJohnSilver.Enums;
 using LongJohnSilver.Statics;
 using NUnit.Framework.Internal;
 
-namespace LongJohnSilver.MethodsKnockout
+namespace LongJohnSilver.Database.DataMethodsKnockout
 {
     public class KnockoutModel
     {

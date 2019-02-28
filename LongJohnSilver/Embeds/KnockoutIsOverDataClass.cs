@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Discord;
 using Discord.Commands;
-using LongJohnSilver.MethodsKnockout;
+using LongJohnSilver.Database.DataMethodsKnockout;
 
 namespace LongJohnSilver.Embeds
 {

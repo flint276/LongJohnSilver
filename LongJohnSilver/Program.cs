@@ -10,7 +10,7 @@ using Discord;
 using System.Reflection;
 using System.IO;
 using System.Data.SQLite;
-using LongJohnSilver.MethodsKnockout;
+using LongJohnSilver.Database.DataMethodsKnockout;
 using LongJohnSilver.Statics;
 using NUnit.Framework;
 

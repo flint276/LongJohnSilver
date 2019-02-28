@@ -3,7 +3,7 @@ using System.Linq;
 using Discord;
 using Discord.Commands;
 using LongJohnSilver.Enums;
-using LongJohnSilver.MethodsKnockout;
+using LongJohnSilver.Database.DataMethodsKnockout;
 
 namespace LongJohnSilver.Embeds
 {

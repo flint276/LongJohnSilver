@@ -8,7 +8,7 @@ using LongJohnSilver.Database;
 using LongJohnSilver.Statics;
 using LongJohnSilver.Interfaces;
 
-namespace LongJohnSilver.MethodsKnockout
+namespace LongJohnSilver.Database.DataMethodsKnockout
 {
     public class KnockoutData
     {

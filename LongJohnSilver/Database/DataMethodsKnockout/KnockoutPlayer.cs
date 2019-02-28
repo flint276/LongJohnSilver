@@ -1,16 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.SQLite;
-using System.Dynamic;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using Discord;
-using LongJohnSilver.Database;
 using LongJohnSilver.Interfaces;
 using LongJohnSilver.Statics;
 
-namespace LongJohnSilver.MethodsKnockout
+namespace LongJohnSilver.Database.DataMethodsKnockout
 {
     public class KnockoutPlayer
     {
