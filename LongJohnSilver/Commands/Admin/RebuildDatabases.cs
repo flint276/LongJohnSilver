@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Discord.Commands;
 using Discord.WebSocket;
-using LongJohnSilver.Database;
+using LongJohnSilver.MethodsKnockout;
 using LongJohnSilver.Statics;
 
 namespace LongJohnSilver.Commands.Admin
@@ -11,6 +11,8 @@ namespace LongJohnSilver.Commands.Admin
         [Command("rebuild")]
         public async Task RebuildDatabasesAsync()
         {
+            var kModel = KnockoutModel.ForChannel(Context.Channel.Id);
+
             if (!StateChecker.IsKnockoutChannel(Context) || StateChecker.IsPrivateMessage(Context))
             {
                 return;
@@ -23,9 +25,8 @@ namespace LongJohnSilver.Commands.Admin
             }
 
             await Context.Channel.SendMessageAsync("!!! All databases are being rebuilt and purged !!!");
-
-            var knockouts = new KnockOutHandler(Context.Channel.Id, Factory.GetDatabase());
-            knockouts.RebuildDataBase();
+            
+            kModel.DeleteAllData();
             
             await Context.Channel.SendMessageAsync("!!! Done !!!");
 

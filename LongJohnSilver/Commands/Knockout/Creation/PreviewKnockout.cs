@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Discord.Commands;
 using LongJohnSilver.Embeds;
+using LongJohnSilver.Enums;
 using LongJohnSilver.MethodsKnockout;
 using LongJohnSilver.Statics;
 

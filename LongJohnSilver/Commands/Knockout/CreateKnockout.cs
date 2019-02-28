@@ -1,7 +1,9 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Discord.Commands;
-using LongJohnSilver.Database;
 using LongJohnSilver.Embeds;
+using LongJohnSilver.Enums;
+using LongJohnSilver.MethodsKnockout;
 using LongJohnSilver.Statics;
 
 namespace LongJohnSilver.Commands.Knockout
@@ -11,28 +13,27 @@ namespace LongJohnSilver.Commands.Knockout
         [Command("createknockout")]
         public async Task AddKnockoutAsync()
         {
+            var kModel = KnockoutModel.ForChannel(Context.Channel.Id);
+
             if (!StateChecker.IsKnockoutChannel(Context) || StateChecker.IsPrivateMessage(Context))
             {
                 return;
-            }
+            }            
 
-            var knockouts = new KnockOutHandler(Context.Channel.Id, Factory.GetDatabase());
-
-            switch (knockouts.KnockoutStatus)
+            switch (kModel.KnockoutStatus)
             {
-                case 1:
+                case KnockoutStatus.NoKnockout:
                     break;
-                case 2:
+                case KnockoutStatus.KnockoutInProgress:
                     await Context.Channel.SendMessageAsync(":x: A knockout is already in progress!");
                     return;
-                case 3:
+                case KnockoutStatus.KnockoutFinished:
                     break;
-                case 4:
+                case KnockoutStatus.KnockoutUnderConstruction:
                     await Context.Channel.SendMessageAsync(":x: A knockout is already being built by someone, sorry!");
                     return;
                 default:
-                    await Context.Channel.SendMessageAsync(":x: Right. This shouldn't have happened. Someone call RedFlint.");
-                    break;
+                    throw new ArgumentOutOfRangeException();
             }
 
             await Discord.UserExtensions.SendMessageAsync(Context.User, 
@@ -45,11 +46,10 @@ namespace LongJohnSilver.Commands.Knockout
                 "**!quit** _Abandon and Delete your Knockout_\n"
                 );
             
-            knockouts.CreateNewKnockout(Context.User.Id);
+            kModel.AddNewKnockout(Context.User.Id);
 
-            await BotEmbeds.DraftBeingCreated(Context, knockouts);
-
-            return;                     
+            var embedData = CreatingKnockoutDataBuilder.BuildData(Context, kModel);
+            await KnockoutEmbeds.CreatingKnockout(embedData);            
         }
     }
 }

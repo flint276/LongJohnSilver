@@ -1,7 +1,8 @@
 ﻿using System.Threading.Tasks;
 using Discord.Commands;
-using LongJohnSilver.Database;
 using LongJohnSilver.Embeds;
+using LongJohnSilver.Enums;
+using LongJohnSilver.MethodsKnockout;
 using LongJohnSilver.Statics;
 
 namespace LongJohnSilver.Commands.Knockout
@@ -12,34 +13,33 @@ namespace LongJohnSilver.Commands.Knockout
         [Command("showknockout")]
         public async Task EmbedKnockoutAsync()
         {
+            var kModel = KnockoutModel.ForChannel(Context.Channel.Id);
+
             if (!StateChecker.IsKnockoutChannel(Context) || StateChecker.IsPrivateMessage(Context))
             {
                 return;
             }
 
-            var knockouts = new KnockOutHandler(Context.Channel.Id, Factory.GetDatabase());
-
-            switch (knockouts.KnockoutStatus)
+            switch (kModel.KnockoutStatus)
             {
-                case 1:
+                case KnockoutStatus.NoKnockout:
                     await Context.Channel.SendMessageAsync(":x: No Knockout has been created or is being created. Go for it! Type !createknockout to begin.");
                     return;
-                case 2:
-                    await BotEmbeds.ShowKnockout(Context, knockouts);
-                    return;
-                case 3:
-                    await BotEmbeds.KnockoutIsOver(Context, knockouts);
+                case KnockoutStatus.KnockoutInProgress:
+                case KnockoutStatus.KnockoutFinished:                    
                     break;
-                case 4:
-                    var userId = knockouts.KnockoutCreatorUlong;
+                case KnockoutStatus.KnockoutUnderConstruction:
+                    var userId = kModel.KnockoutOwner;
                     var username = Context.Client.GetUser(userId).Username;
-                    await Context.Channel.SendMessageAsync($"This Knockout is currently under construction by **{username}**! Feel free to advise!");
-                    await BotEmbeds.ShowKnockout(Context, knockouts);
+                    await Context.Channel.SendMessageAsync($"This Knockout is currently under construction by **{username}**! Feel free to advise!");                    
                     return;
                 default:
                     await Context.Channel.SendMessageAsync(":x: Right. This shouldn't have happened. Someone call RedFlint.");
                     return;
             }
+
+            var embedData = ShowKnockoutDataBuilder.BuildData(Context, kModel);
+            await KnockoutEmbeds.ShowKnockout(embedData);
         }
     }
 }

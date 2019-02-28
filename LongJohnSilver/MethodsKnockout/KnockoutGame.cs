@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using LongJohnSilver.Database;
+using LongJohnSilver.Interfaces;
 using LongJohnSilver.Statics;
 
 namespace LongJohnSilver.MethodsKnockout
@@ -80,6 +81,11 @@ namespace LongJohnSilver.MethodsKnockout
             Insert();
         }
 
+        public KnockoutGame()
+        {
+            Id = -1;
+        }
+
         public static List<KnockoutGame> SelectAll()
         {
             var resultList = new List<KnockoutGame>();
@@ -102,6 +108,8 @@ namespace LongJohnSilver.MethodsKnockout
 
         private void Update()
         {
+            if (Id == -1) throw new InvalidOperationException("Attempted to Update An Empty Knockout Game Class");
+
             MainDataDb.RunQuery(
                 "UPDATE knockout SET name = @param2, status = @param3, owner = @param4, channel = @param5 WHERE ID = @param1",
                 UpdateParameters);
@@ -122,6 +130,8 @@ namespace LongJohnSilver.MethodsKnockout
 
         public void Delete()
         {
+            if (Id == -1) throw new InvalidOperationException("Attempted to Delete An Empty Knockout Game Class");
+
             MainDataDb.RunQuery("DELETE FROM knockout WHERE id = @param1", IdParameters);
         }
     }

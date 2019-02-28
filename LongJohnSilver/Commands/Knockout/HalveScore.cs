@@ -1,8 +1,10 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Discord.Commands;
 using Discord.WebSocket;
-using LongJohnSilver.Database;
 using LongJohnSilver.Embeds;
+using LongJohnSilver.Enums;
+using LongJohnSilver.MethodsKnockout;
 using LongJohnSilver.Statics;
 
 namespace LongJohnSilver.Commands.Knockout
@@ -12,6 +14,8 @@ namespace LongJohnSilver.Commands.Knockout
         [Command ("snap")]
         public async Task HalveAsync()
         {
+            var kModel = KnockoutModel.ForChannel(Context.Channel.Id);
+
             if (!StateChecker.IsKnockoutChannel(Context))
             {
                 return;
@@ -23,35 +27,29 @@ namespace LongJohnSilver.Commands.Knockout
                 return;
             }
 
-            var knockouts = new KnockOutHandler(Context.Channel.Id, Factory.GetDatabase());
-
-            if (Context.User.Id != knockouts.KnockoutCreatorUlong)
+            if (Context.User.Id != kModel.KnockoutOwner)
             {
                 await Context.Channel.SendMessageAsync(":x: You are no the creator of this knockout!");
             }
 
-            switch (knockouts.KnockoutStatus)
+            switch (kModel.KnockoutStatus)
             {
-                case 1:
-                    await Context.Channel.SendMessageAsync(":x: No Active Knockout In Progress");
-                    return;
-                case 2:
+                case KnockoutStatus.KnockoutInProgress:
                     break;
-                case 3:
-                    await Context.Channel.SendMessageAsync(":x: No Active Knockout In Progress");
-                    return;
-                case 4:
+                case KnockoutStatus.NoKnockout:
+                case KnockoutStatus.KnockoutFinished:
+                case KnockoutStatus.KnockoutUnderConstruction:
                     await Context.Channel.SendMessageAsync(":x: No Active Knockout In Progress");
                     return;
                 default:
-                    await Context.Channel.SendMessageAsync(":x: Right. This shouldn't have happened. Someone call RedFlint.");
-                    return;
+                    throw new ArgumentOutOfRangeException();
             }
 
             await Context.Channel.SendMessageAsync("https://i.imgur.com/5NFHKiJ.gif");
             await Context.Channel.SendMessageAsync("**When I'm done, half of the votes will still exist. Perfectly balanced, as all things should be.**");                      
-            knockouts.HalveScores();
-            await BotEmbeds.ShowKnockout(Context, knockouts);           
+            kModel.HalveScores();
+            var embedData = ShowKnockoutDataBuilder.BuildData(Context, kModel);
+            await KnockoutEmbeds.ShowKnockout(embedData);
         }
 
     }

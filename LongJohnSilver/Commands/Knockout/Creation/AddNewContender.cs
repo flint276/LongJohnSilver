@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Discord.Commands;
+using LongJohnSilver.Enums;
 using LongJohnSilver.MethodsKnockout;
 using LongJohnSilver.Statics;
 
@@ -16,7 +17,19 @@ namespace LongJohnSilver.Commands.Knockout.Creation
             if (!StateChecker.IsPrivateMessage(Context))
             {
                 return;
-            }    
+            }
+
+            if (input == "")
+            {
+                await Context.Channel.SendMessageAsync(":x: No Value Entered!");
+                return;
+            }
+
+            if (input.Contains('/'))
+            {
+                await Context.Channel.SendMessageAsync(":x: Sorry, you can't put '/' characters in your contenders name. (it confuses the voting command!)");
+                return;
+            }
 
             if (kModel.GameChannel == 0)
             {
@@ -40,27 +53,15 @@ namespace LongJohnSilver.Commands.Knockout.Creation
                 default:
                     throw new ArgumentOutOfRangeException();
             }
-               
-            var modResult = kModel.AddNewContender(input);
 
-            switch (modResult)
+            if (kModel.DoesContenderExist(input))
             {
-                case ModificationResult.ValueIsEmpty:
-                    await Context.Channel.SendMessageAsync(":x: No Value Entered!");
-                    return;
-                case ModificationResult.Duplicate:
-                    await Context.Channel.SendMessageAsync($":x: The Contender: **{input}** already exists in your list!");
-                    return;
-                case ModificationResult.IllegalCharacter:                
-                    await Context.Channel.SendMessageAsync(":x: Sorry, you can't put '/' characters in your contenders name. (it confuses the voting command!)");
-                    return;
-                case ModificationResult.Success:
-                    await Context.Channel.SendMessageAsync($"You have added the contender **{input}**");
-                    return;
-                case ModificationResult.Missing:
-                default:
-                    throw new ArgumentOutOfRangeException();
+                await Context.Channel.SendMessageAsync($":x: The Contender: **{input}** already exists in your list!");
+                return;
             }
+
+            kModel.AddNewContender(input);
+            await Context.Channel.SendMessageAsync($"You have added the contender **{input}**");
         }
     }
 }

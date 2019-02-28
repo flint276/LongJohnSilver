@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Discord.Commands;
+using LongJohnSilver.Enums;
 using LongJohnSilver.MethodsKnockout;
 using LongJohnSilver.Statics;
 
@@ -37,13 +38,12 @@ namespace LongJohnSilver.Commands.Knockout.Creation
                     throw new ArgumentOutOfRangeException();                    
             }
 
-            var gameChannel = Context.Client.GetChannel(kModel.GameChannel) as Discord.IMessageChannel;
-                        
             kModel.DeleteAllData();
-            
+
             await Context.Channel.SendMessageAsync("Database cleared!");
 
-            if (gameChannel != null) await gameChannel.SendMessageAsync("Knockout Creation Aborted By Creator. You are free to create a new knockout.");
+            if (Context.Client.GetChannel(kModel.GameChannel) is Discord.IMessageChannel gameChannel)
+                await gameChannel.SendMessageAsync("Knockout Creation Aborted By Creator. You are free to create a new knockout.");
         }
     }
 }

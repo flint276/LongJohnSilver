@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Discord.Commands;
+using LongJohnSilver.Enums;
 using LongJohnSilver.MethodsKnockout;
 using LongJohnSilver.Statics;
 
@@ -46,25 +47,10 @@ namespace LongJohnSilver.Commands.Knockout.Creation
                 default:
                     throw new ArgumentOutOfRangeException();
             }
-            
-            var modResult = kModel.SetKnockoutName(input);
 
-            switch (modResult)
-            {
-                case ModificationResult.ValueIsEmpty:
-                    await Context.Channel.SendMessageAsync(":x: No Value Entered!");
-                    break;
-                case ModificationResult.Success:
-                    await Context.Channel.SendMessageAsync($"You have named your knockout: {input}");
-                    break;
-                case ModificationResult.IllegalCharacter:
-                case ModificationResult.Duplicate:
-                case ModificationResult.Missing:
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+            kModel.KnockoutName = input;
 
-            
+            await Context.Channel.SendMessageAsync($"You have named your knockout: {input}");           
         }
     }
 }

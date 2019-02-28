@@ -1,7 +1,8 @@
 ﻿using System.Threading.Tasks;
 using Discord.Commands;
-using LongJohnSilver.Database;
 using LongJohnSilver.Embeds;
+using LongJohnSilver.Enums;
+using LongJohnSilver.MethodsKnockout;
 using LongJohnSilver.Statics;
 
 namespace LongJohnSilver.Commands.Knockout.Creation
@@ -11,65 +12,60 @@ namespace LongJohnSilver.Commands.Knockout.Creation
         [Command("begin")]
         public async Task BeginKnockoutAsync()
         {
+            var kModel = KnockoutModel.ForUser(Context.User.Id);
+
             if (!StateChecker.IsPrivateMessage(Context))
             {
                 return;
             }
 
-            var channelId = KnockOutHandler.ChannelForUser(Context.User.Id, Factory.GetDatabase());
-
-            if (channelId == 0)
+            if (kModel.GameChannel == 0)
             {
                 await Context.Channel.SendMessageAsync(":x: You are not making a knockout at the moment!");
                 return;
             }
 
-            var knockouts = new KnockOutHandler(channelId, Factory.GetDatabase());
-
-            if (knockouts.KnockoutCreatorUlong != Context.User.Id)
+            switch (kModel.KnockoutStatus)
             {
-                await Context.Channel.SendMessageAsync(":x: You are not making a knockout at the moment!");
-                return;
-            }
-
-            switch (knockouts.KnockoutStatus)
-            {
-                case 1:
+                case KnockoutStatus.NoKnockout:
                     await Context.Channel.SendMessageAsync(":x: No Knockout is being created at the moment!");
                     return;
-                case 2:
+                case KnockoutStatus.KnockoutInProgress:
                     await Context.Channel.SendMessageAsync(":x: This knockout has already started! No more changes!");
                     return;
-                case 3:
+                case KnockoutStatus.KnockoutFinished:
                     await Context.Channel.SendMessageAsync(":x: This knockout is finished, please feel free to create a new one!");
                     return;
-                case 4:
+                case KnockoutStatus.KnockoutUnderConstruction:
                     break;
                 default:
                     await Context.Channel.SendMessageAsync(":x: Right. This shouldn't have happened. Someone call RedFlint.");
                     return;
             }
 
-            if (knockouts.ContendersCount < 4)
+            if (kModel.AllContenderNames.Count < 4)
             {
                 await Context.Channel.SendMessageAsync(":x: Knockouts are over when it reaches the Top 3. Please add more Contenders.");
                 return;
             }
 
-            if (knockouts.KnockoutTitle == "" || knockouts.KnockoutTitle == "No Knockout In Progress" || knockouts.KnockoutTitle == "Knockout Under Construction")
+            if (kModel.KnockoutName == "Knockout Under Construction")
             {
                 await Context.Channel.SendMessageAsync(":x: Please Name your Knockout");
                 return;
             }
 
-            knockouts.SetKnockoutToActive();
+            kModel.KnockoutStatus = KnockoutStatus.KnockoutInProgress;
 
             await Context.Channel.SendMessageAsync("You're done! Please check in main channel for the knockout!");
 
-            var chnl = Context.Client.GetChannel(knockouts.KnockoutChannelUlong) as Discord.IMessageChannel;
-            await chnl.SendMessageAsync("A New Knockout Has Been Created!");
+            if (Context.Client.GetChannel(kModel.GameChannel) is Discord.IMessageChannel channel)
+            {
+                await channel.SendMessageAsync("A New Knockout Has Been Created!");
+            }
 
-            await BotEmbeds.ShowKnockout(Context, chnl, knockouts);
+            var embedData = ShowKnockoutDataBuilder.BuildData(Context, kModel);
+            await KnockoutEmbeds.ShowKnockout(embedData);
         }
     }
 }

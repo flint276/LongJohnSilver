@@ -1,9 +1,11 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
-using LongJohnSilver.Database;
 using LongJohnSilver.Embeds;
+using LongJohnSilver.Enums;
+using LongJohnSilver.MethodsKnockout;
 using LongJohnSilver.Statics;
 
 namespace LongJohnSilver.Commands.Knockout
@@ -14,6 +16,8 @@ namespace LongJohnSilver.Commands.Knockout
         [Command("vote")]
         public async Task PlayAsync([Remainder]string input = "")
         {
+            var kModel = KnockoutModel.ForChannel(Context.Channel.Id);
+
             if (!StateChecker.IsKnockoutChannel(Context) || StateChecker.IsPrivateMessage(Context))
             {
                 return;
@@ -36,40 +40,31 @@ namespace LongJohnSilver.Commands.Knockout
             var choiceToAdd = choices.First();
             var choiceToSub = choices.Last();
 
-            var knockouts = new KnockOutHandler(Context.Channel.Id, Factory.GetDatabase());
-
-            switch (knockouts.KnockoutStatus)
+            switch (kModel.KnockoutStatus)
             {
-                case 1:
+                case KnockoutStatus.NoKnockout:
                     await Context.Channel.SendMessageAsync(":x: No Knockout ongoing. Feel free to start a new one!");
                     return;
-                case 2:
+                case KnockoutStatus.KnockoutInProgress:
                     break;
-                case 3:
+                case KnockoutStatus.KnockoutFinished:
                     await Context.Channel.SendMessageAsync(":x: This knockout is finished. Feel free to start a new one!");
                     return;
-                case 4:
+                case KnockoutStatus.KnockoutUnderConstruction:
                     await Context.Channel.SendMessageAsync(":x: This knockout is still under construction! Patience!");
                     return;
                 default:
-                    await Context.Channel.SendMessageAsync(":x: Right. This shouldn't have happened. Someone call RedFlint.");
-                    return;
+                    throw new ArgumentOutOfRangeException();
             }
 
-            if (knockouts.PlayerWentLastTime(Context.User.Id))
+            if (!kModel.PlayerCanGo(Context.User.Id))
             {
-                await Context.Channel.SendMessageAsync(":x: You just went! Give a few other people a chance!");
+                await Context.Channel.SendMessageAsync(":x: You either just went or are out of turns. Either way, you can't go.");
                 return;
-            }
-
-            if (knockouts.TurnsLeftForPlayer(Context.User.Id) <= 0)
-            {
-                await Context.Channel.SendMessageAsync(":x: You are out of turns, please wait until the turns are reset");
-                return;
-            }
+            }            
 
             var original = choiceToAdd;
-            choiceToAdd = knockouts.FindNearestMatch(choiceToAdd);
+            choiceToAdd = kModel.FindNearestMatch(choiceToAdd);
             if (choiceToAdd == "ERROR")
             {
                 await Context.Channel.SendMessageAsync($":x: I'm sorry, I could not find a close match for **{original}**, please try again");
@@ -77,7 +72,7 @@ namespace LongJohnSilver.Commands.Knockout
             }
 
             original = choiceToSub;
-            choiceToSub = knockouts.FindNearestMatch(choiceToSub);
+            choiceToSub = kModel.FindNearestMatch(choiceToSub);
             if (choiceToSub == "ERROR")
             {
                 await Context.Channel.SendMessageAsync($":x: I'm sorry, I could not find a close match for **{original}**, please try again");
@@ -90,39 +85,31 @@ namespace LongJohnSilver.Commands.Knockout
                 return;
             }
 
-            knockouts.ApplyVoteChanges(choiceToAdd, choiceToSub, Context.User.Id);
+            kModel.ApplyContenderScoreChanges(choiceToAdd, choiceToSub);
+            var recentKiller = kModel.ApplyKilledSettings(Context.User.Id);
+            kModel.ApplyPostVotePlayerChanges(Context.User.Id);
 
-            if (knockouts.LivingContendersCount <= 3)
+            if (kModel.AllLivingContendersCount <= 3)
             {
-                knockouts.EndKnockout();
+                kModel.KnockoutStatus = KnockoutStatus.KnockoutFinished;
 
-                await BotEmbeds.KnockoutIsOver(Context, knockouts);
+                var embedData = KnockoutIsOverDataBuilder.BuildData(Context, kModel);
+                await KnockoutEmbeds.KnockoutIsOver(embedData);
 
             }
             else
-            {                
-                var userName = Context.User.Username;
-                var avatarUrl = Context.User.GetAvatarUrl();
+            {                                
+                var embedDataA = KnockoutVotingReportDataBuilder.BuildData(Context, kModel, choiceToAdd, choiceToSub);
+                await KnockoutEmbeds.VotingReport(embedDataA);                
 
-                await Context.Channel.SendMessageAsync("", false, BotEmbeds.PlayerVotingReportEmbed(userName, avatarUrl, choiceToAdd, choiceToSub));
-
-                var recentKiller = knockouts.PlayerHasJustKilled();
-
-                if (recentKiller != 0)
-                {
-                    var killer = Context.Client.GetUser(recentKiller);
-
-                    if (killer != null)
-                    {
-                        await killer.SendMessageAsync("You have killed a contender, type !epitaph _<message>_ in the main channel to leave a mark on their grave!");
-                        await killer.SendMessageAsync("(please note, if you eliminate another contender, you will lose the opportunity to engrave an epitaph for this one)");
-                    }
-                    
-                    knockouts.GetContendersFromDb();
+                if (recentKiller)
+                {                    
+                    await Context.User.SendMessageAsync("You have killed a contender, type !epitaph _<message>_ in the main channel to leave a mark on their grave!");
+                    await Context.User.SendMessageAsync("(please note, if you eliminate another contender, you will lose the opportunity to engrave an epitaph for this one)");                                    
                 }
 
-                await BotEmbeds.ShowKnockout(Context, knockouts);
-
+                var embedDataB = ShowKnockoutDataBuilder.BuildData(Context, kModel);
+                await KnockoutEmbeds.ShowKnockout(embedDataB);
             }
         }
     }

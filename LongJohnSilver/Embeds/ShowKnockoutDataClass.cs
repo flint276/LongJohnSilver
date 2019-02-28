@@ -2,6 +2,7 @@
 using System.Linq;
 using Discord;
 using Discord.Commands;
+using LongJohnSilver.Enums;
 using LongJohnSilver.MethodsKnockout;
 
 namespace LongJohnSilver.Embeds
@@ -42,7 +43,7 @@ namespace LongJohnSilver.Embeds
 
             dataStruct.PlayersReadyString = "";
 
-            foreach (var (playerId, canGoBool) in kModel.GetAllPlayerIdsWithCanGoBool())
+            foreach (var (playerId, canGoBool) in kModel.AllPlayersWithCanGoStatus())
             {
                 if (context.Guild.GetUser(playerId) == null) continue;
 
@@ -50,11 +51,11 @@ namespace LongJohnSilver.Embeds
 
                 if (canGoBool)
                 {
-                    dataStruct.PlayersReadyString += $"{username}";
+                    dataStruct.PlayersReadyString += $"{username}, ";
                 }
                 else
                 {
-                    dataStruct.PlayersReadyString += $"~~{username}~~";
+                    dataStruct.PlayersReadyString += $"~~{username}~~, ";
                 }                    
             }
 
@@ -79,7 +80,7 @@ namespace LongJohnSilver.Embeds
                 else
                 {
                     var epitaph = allContendersWithEpitaph[contender];
-                    dataStruct.TheFallenFields.Add($"**{ranking})** {contenderName} : {contenderScore}\n- *{epitaph}*\n");
+                    dataStruct.TheFallenFields.Add($"**{ranking})** {contenderName}\n- *{epitaph}*\n");
                 }
             }
 

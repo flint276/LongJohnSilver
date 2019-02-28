@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Discord.Commands;
+using LongJohnSilver.Enums;
 using LongJohnSilver.MethodsKnockout;
 using LongJohnSilver.Statics;
 
@@ -15,6 +16,12 @@ namespace LongJohnSilver.Commands.Knockout.Creation
 
             if (!StateChecker.IsPrivateMessage(Context))
             {
+                return;
+            }
+
+            if (input == "")
+            {
+                await Context.Channel.SendMessageAsync(":x: No Value Entered!");
                 return;
             }
 
@@ -41,24 +48,14 @@ namespace LongJohnSilver.Commands.Knockout.Creation
                     throw new ArgumentOutOfRangeException();
             }
 
-            var modResult = kModel.DeleteContender(input);
-
-            switch (modResult)
-            {                                    
-                case ModificationResult.ValueIsEmpty:
-                    await Context.Channel.SendMessageAsync(":x: No Value Entered!");
-                    return;
-                case ModificationResult.Success:
-                    await Context.Channel.SendMessageAsync($"You have removed **{input}** as a contender!");
-                    return;
-                case ModificationResult.Missing:
-                    await Context.Channel.SendMessageAsync($":x: There is no contender called **{input}**!");
-                    return;
-                case ModificationResult.IllegalCharacter:
-                case ModificationResult.Duplicate:                
-                default:
-                    throw new ArgumentOutOfRangeException();
+            if (!kModel.DoesContenderExist(input))
+            {
+                await Context.Channel.SendMessageAsync($":x: There is no contender called **{input}**!");
+                return;
             }
+
+            kModel.DeleteContender(input);
+            await Context.Channel.SendMessageAsync($":x: You have removed **{input}**!");
         }
     }
 }

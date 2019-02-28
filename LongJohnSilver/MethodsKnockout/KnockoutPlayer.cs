@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Discord;
 using LongJohnSilver.Database;
+using LongJohnSilver.Interfaces;
 using LongJohnSilver.Statics;
 
 namespace LongJohnSilver.MethodsKnockout
@@ -84,6 +85,11 @@ namespace LongJohnSilver.MethodsKnockout
             Insert();
         }
 
+        public KnockoutPlayer()
+        {
+            Id = -1;
+        }
+
         public static List<KnockoutPlayer> SelectAll()
         {
             var resultList = new List<KnockoutPlayer>();
@@ -106,6 +112,8 @@ namespace LongJohnSilver.MethodsKnockout
 
         private void Update()
         {
+            if (Id == -1) throw new InvalidOperationException("Attempted to Update An Empty Knockout Player Class");
+
             MainDataDb.RunQuery(
                 "UPDATE kplayers SET playerid = @param2, turnsleft = @param3, lastplayed = @param4, channel = @param5 WHERE id = @param1",
                 UpdateParameters);
@@ -126,6 +134,8 @@ namespace LongJohnSilver.MethodsKnockout
 
         public void Delete()
         {
+            if (Id == -1) throw new InvalidOperationException("Attempted to Delete An Empty Knockout Player Class");
+
             MainDataDb.RunQuery("DELETE FROM kplayers WHERE id = @param1", IdParameters);
         }
     }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using LongJohnSilver.Database;
+using LongJohnSilver.Interfaces;
 using LongJohnSilver.Statics;
 
 namespace LongJohnSilver.MethodsKnockout
@@ -93,6 +94,11 @@ namespace LongJohnSilver.MethodsKnockout
             Insert();
         }
 
+        public KnockoutContender()
+        {
+            Id = -1;
+        }
+
         public static List<KnockoutContender> SelectAll()
         {
             var resultList = new List<KnockoutContender>();
@@ -116,6 +122,8 @@ namespace LongJohnSilver.MethodsKnockout
 
         private void Update()
         {
+            if (Id == -1) throw new InvalidOperationException("Attempted to Update An Empty Knockout Contender Class");
+
             MainDataDb.RunQuery(
                 "UPDATE contenders SET name = @param2, score = @param3, killer = @param4, epitaph = @param5, channel = @param6 WHERE id = @param1", 
                 UpdateParameters);
@@ -136,6 +144,8 @@ namespace LongJohnSilver.MethodsKnockout
 
         public void Delete()
         {
+            if (Id == -1) throw new InvalidOperationException("Attempted to Delete An Empty Knockout Contender Class");
+
             MainDataDb.RunQuery("DELETE FROM contenders WHERE id = @param1", IdParameters);
         }
     }

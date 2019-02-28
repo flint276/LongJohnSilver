@@ -1,7 +1,8 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Discord.Commands;
-using Discord.WebSocket;
-using LongJohnSilver.Database;
+using LongJohnSilver.Enums;
+using LongJohnSilver.MethodsKnockout;
 using LongJohnSilver.Statics;
 
 namespace LongJohnSilver.Commands.Knockout 
@@ -12,6 +13,8 @@ namespace LongJohnSilver.Commands.Knockout
         [Command("newday")]
         public async Task NewDayAsync()
         {
+            var kModel = KnockoutModel.ForChannel(Context.Channel.Id);
+
             if (!StateChecker.IsKnockoutChannel(Context) || StateChecker.IsPrivateMessage(Context))
             {
                 return;
@@ -29,10 +32,21 @@ namespace LongJohnSilver.Commands.Knockout
                 return;
             }
 
-            var knockouts = new KnockOutHandler(Context.Channel.Id, Factory.GetDatabase());
-            knockouts.NewDay();
+            switch (kModel.KnockoutStatus)
+            {
+                case KnockoutStatus.KnockoutInProgress:
+                    break;
+                case KnockoutStatus.NoKnockout:
+                case KnockoutStatus.KnockoutFinished:
+                case KnockoutStatus.KnockoutUnderConstruction:
+                    await Context.Channel.SendMessageAsync(":x: No Active Knockout In Progress");
+                    return;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+
+            kModel.NewDay();
             await Context.Channel.SendMessageAsync("It is a glorious new day. Everyone's turns are reset!");
-            return;
         }
     }
 }

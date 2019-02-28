@@ -10,7 +10,7 @@ using Discord;
 using System.Reflection;
 using System.IO;
 using System.Data.SQLite;
-using LongJohnSilver.Database;
+using LongJohnSilver.MethodsKnockout;
 using LongJohnSilver.Statics;
 using NUnit.Framework;
 
@@ -118,7 +118,7 @@ namespace LongJohnSilver
         {
             Console.WriteLine("Starting!");            
             Console.WriteLine("In!");
-            var channelsToNotify = KnockOutHandler.NewDayForAll(Factory.GetDatabase());
+            var channelsToNotify = KnockoutData.GetAllKnockoutChannels();
 
             foreach (var c in channelsToNotify)
             {
