@@ -61,7 +61,7 @@ namespace LongJohnSilver.Database.DataMethodsKnockout
         private object[] InsertParameters => new object[] {PlayerId, TurnsLeft, LastPlayed, Channel};
         private object[] IdParameters => new object[] {Id};
 
-        public KnockoutPlayer(long id, string playerId, int turnsLeft, int lastPlayed, string channel)
+        private KnockoutPlayer(long id, string playerId, int turnsLeft, int lastPlayed, string channel)
         {
             Id = id;
             _playerId = playerId;

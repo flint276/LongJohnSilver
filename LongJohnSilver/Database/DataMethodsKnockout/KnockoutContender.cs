@@ -72,7 +72,7 @@ namespace LongJohnSilver.Database.DataMethodsKnockout
         private object[] InsertParameters => new object[] {Name, Score, Killer, Epitaph, Channel};
         private object[] IdParameters => new object[] {Id};
 
-        public KnockoutContender(long id, string name, int score, string killer, string epitaph, string channel)
+        private KnockoutContender(long id, string name, int score, string killer, string epitaph, string channel)
         {
             Id = id;
             _name = name;

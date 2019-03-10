@@ -32,7 +32,7 @@ namespace LongJohnSilver.Commands.Knockout
                     var userId = kModel.KnockoutOwner;
                     var username = Context.Client.GetUser(userId).Username;
                     await Context.Channel.SendMessageAsync($"This Knockout is currently under construction by **{username}**! Feel free to advise!");                    
-                    return;
+                    break;
                 default:
                     await Context.Channel.SendMessageAsync(":x: Right. This shouldn't have happened. Someone call RedFlint.");
                     return;

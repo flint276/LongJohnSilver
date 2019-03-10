@@ -19,7 +19,7 @@ namespace LongJohnSilver.Database
         public string DbLocation = $@"{CurrentDirectory}{Path.DirectorySeparatorChar}Data{Path.DirectorySeparatorChar}";
         public string DbPath;
         public string DbSource;
-        public int CurrentVersion = 7;
+        public int CurrentVersion = 8;
 
         /// <summary>
         /// Constructor, creates database if not present

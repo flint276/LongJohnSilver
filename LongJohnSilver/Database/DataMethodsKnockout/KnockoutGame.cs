@@ -63,7 +63,7 @@ namespace LongJohnSilver.Database.DataMethodsKnockout
         private object[] InsertParameters => new object[] {Name, Status, Owner, Channel};
         private object[] IdParameters => new object[] {Id};
 
-        public KnockoutGame(long id, string name, int status, string owner, string channel)
+        private KnockoutGame(long id, string name, int status, string owner, string channel)
         {
             Id = id;
             _name = name;

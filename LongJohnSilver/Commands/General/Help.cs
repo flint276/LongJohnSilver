@@ -9,7 +9,7 @@ namespace LongJohnSilver.Commands.General
         [Command("help")]
         public async Task HelpAsync()
         {
-            if (!StateChecker.IsKnockoutChannel(Context))
+            if (StateChecker.IsKnockoutChannel(Context))
             {
                 await Context.Channel.SendMessageAsync(
                     "**!createknockout** - Creates a new knockout, instructions follow in a private message.\n" +
@@ -25,13 +25,24 @@ namespace LongJohnSilver.Commands.General
                 return;
             }
 
-            if (!StateChecker.IsGeneralChannel(Context))
+            if (StateChecker.IsGeneralChannel(Context))
             {
                 await Context.Channel.SendMessageAsync(
                     "**!ver** - Show the latest version of the bot.\n" +
                     "**!weather** *<Location>* - Show a simple weather report for that location.\n" +
                     "Have fun! If I break, please let RedFlint know!"
                     );
+                return;
+            }
+
+            if (StateChecker.IsGamingChannel(Context))
+            {
+                await Context.Channel.SendMessageAsync(
+                    "**!showgamertags** *<username>* or *<service>* - Show the gamertags for a user or all gamertags for a service.\n" +
+                    "**!setgamertag** *<service>* *<gamertag>* - Set your gamertag for a particular service.\n" +
+                    "**!removegamertag** *<service>* - Removes your tag against a particular service.\n" +                    
+                    "Have fun! If I break, please let RedFlint know!"
+                );
                 return;
             }
         }

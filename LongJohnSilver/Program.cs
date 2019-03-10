@@ -52,17 +52,21 @@ namespace LongJohnSilver
             _client.Log += Log;
             
             // hourly timer
-
+            /*
             var secondsTillHourIsUp = (60 - (DateTime.Now.Minute)) * 60;
             
 
             _botTimer = new System.Timers.Timer(secondsTillHourIsUp * 1000);
+            _botTimer = new System.Timers.Timer(10000);
 
             _botTimer.Elapsed += async (sender, e) => await OnTimedEvent(sender, e, _client);
             _botTimer.Elapsed += (sender, e) => _botTimer.Interval = 3600000;
 
             _botTimer.AutoReset = true;
             _botTimer.Enabled = true;
+            */
+
+            BotTimers.InitializeTimers(_client);
 
             // start bot
 
@@ -124,6 +128,8 @@ namespace LongJohnSilver
             {
                 var discordChannel = (ISocketMessageChannel)_client.GetChannel(c);
                 await discordChannel.SendMessageAsync("It is a glorious new hour. Everyone's turns are reset!");
+                var kModel = KnockoutModel.ForChannel(c);
+                kModel.NewDay();
             }
 
             await Task.Delay(-1);
