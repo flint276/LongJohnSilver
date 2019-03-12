@@ -299,8 +299,12 @@ namespace LongJohnSilver.Database
             RunQuery($"CREATE TABLE IF NOT EXISTS knockout(id INTEGER PRIMARY KEY)");
             RunQuery($"CREATE TABLE IF NOT EXISTS kplayers(id INTEGER PRIMARY KEY)");
             RunQuery($"CREATE TABLE IF NOT EXISTS channelroles(id INTEGER PRIMARY KEY)");
-            RunQuery("CREATE TABLE IF NOT EXISTS gamertags(id INTEGER PRIMARY KEY)");
+            RunQuery($"CREATE TABLE IF NOT EXISTS gamertags(id INTEGER PRIMARY KEY)");
             RunQuery($"CREATE TABLE IF NOT EXISTS version(id INTEGER PRIMARY KEY)");
+            RunQuery($"CREATE TABLE IF NOT EXISTS draftgames(id INTEGER PRIMARY KEY)");
+            RunQuery($"CREATE TABLE IF NOT EXISTS draftslots(id INTEGER PRIMARY KEY)");
+            RunQuery($"CREATE TABLE IF NOT EXISTS draftchoices(id INTEGER PRIMARY KEY)");
+
 
             // Populate Columns, catch and ignore any SQL errors as they are just advising the column already exists
             RunUnsafeQuery($"ALTER TABLE contenders ADD name VARCHAR(200)");
@@ -328,6 +332,25 @@ namespace LongJohnSilver.Database
             RunUnsafeQuery($"ALTER TABLE gamertags ADD tag VARCHAR(200)");
 
             RunUnsafeQuery($"ALTER TABLE version ADD ver INT");
+
+            RunUnsafeQuery($"ALTER TABLE draftgames ADD channel VARCHAR(50)");
+            RunUnsafeQuery($"ALTER TABLE draftgames ADD owner VARCHAR(50)");
+            RunUnsafeQuery($"ALTER TABLE draftgames ADD status INT");
+            RunUnsafeQuery($"ALTER TABLE draftgames ADD title VARCHAR(200)");
+            RunUnsafeQuery($"ALTER TALBE draftgames ADD description VARCHAR(1000)");
+            RunUnsafeQuery($"ALTER TABLE draftgames ADD starttime INT");
+            RunUnsafeQuery($"ALTER TABLE draftgames ADD days INT");
+
+            RunUnsafeQuery($"ALTER TABLE draftslots ADD channel VARCHAR(50)");
+            RunUnsafeQuery($"ALTER TABLE draftslots ADD playerid VARCHAR(30)");
+            RunUnsafeQuery($"ALTER TABLE draftslots ADD day INT");
+            RunUnsafeQuery($"ALTER TABLE draftslots ADD slot INT");
+
+            RunUnsafeQuery($"ALTER TABLE draftchoices ADD channel VARCHAR(50)");
+            RunUnsafeQuery($"ALTER TABLE draftchoices ADD playerid VARCHAR(30)");
+            RunUnsafeQuery($"ALTER TABLE draftchoices ADD name VARCHAR(200)");
+            
+
                                                                       
             // Update Version
             RunQuery($"DELETE FROM version");
