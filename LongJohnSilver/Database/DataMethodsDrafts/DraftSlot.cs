@@ -99,7 +99,7 @@ namespace LongJohnSilver.Database.DataMethodsDrafts
                 var day = (int) dataRow["day"];
                 var slot = (int) dataRow["slot"];
 
-                resultList.Add(new DraftSlot());
+                resultList.Add(new DraftSlot(id, channel, playerId, day, slot));
             }
 
             return resultList;
@@ -110,7 +110,7 @@ namespace LongJohnSilver.Database.DataMethodsDrafts
             if (Id == -1) throw new InvalidOperationException("Attempted to Update An Empty Draft Slot Class");
 
             MainDataDb.RunQuery(
-                "UPDATE draftslot SET channel = @param2, playerid = @param3, day = @param4, slot = @param5 WHERE id = @param1",
+                "UPDATE draftslots SET channel = @param2, playerid = @param3, day = @param4, slot = @param5 WHERE id = @param1",
                 UpdateParameters);
         }
 

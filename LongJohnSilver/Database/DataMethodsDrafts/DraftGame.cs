@@ -95,16 +95,55 @@ namespace LongJohnSilver.Database.DataMethodsDrafts
         private object[] InsertParameters => new object[] { Channel, Owner, Status, Title, Description, StartTime, Days };
         private object[] IdParameters => new object[] { Id };
 
+        private DraftGame(long id, string channel, string owner, int status, string title, string description,
+            int startTime, int days)
+        {
+            Id = id;
+            _channel = channel;
+            _owner = owner;
+            _status = status;
+            _title = title;
+            _description = description;
+            _startTime = startTime;
+            _days = days;
+        }
+
+        public DraftGame(string channel, string owner, int status, string title, string description,
+            int startTime, int days)
+        {            
+            _channel = channel;
+            _owner = owner;
+            _status = status;
+            _title = title;
+            _description = description;
+            _startTime = startTime;
+            _days = days;
+            Update();
+        }
+
+        public DraftGame()
+        {
+            Id = -1;
+        }
+
         public static List<DraftGame> SelectAll()
         {
             var resultList = new List<DraftGame>();
             var mainDataDb = Factory.GetDatabase();
-            var dataResults = mainDataDb.GetData("SELECT * FROM knockout");
+            var dataResults = mainDataDb.GetData("SELECT * FROM draftgames");
 
             foreach (var dataRow in dataResults)
             {
+                var id = (long)dataRow["id"];
+                var channel = (string)dataRow["channel"];
+                var owner = (string) dataRow["owner"];
+                var status = (int) dataRow["status"];
+                var title = (string) dataRow["title"];
+                var description = (string) dataRow["description"];
+                var startTime = (int) dataRow["starttime"];
+                var days = (int) dataRow["days"];
 
-                resultList.Add(new DraftGame());
+                resultList.Add(new DraftGame(id, channel, owner, status, title, description, startTime, days));
             }
 
             return resultList;
@@ -112,21 +151,21 @@ namespace LongJohnSilver.Database.DataMethodsDrafts
 
         private void Update()
         {
-            if (Id == -1) throw new InvalidOperationException("Attempted to Update An Empty Knockout Game Class");
+            if (Id == -1) throw new InvalidOperationException("Attempted to Update An Empty Draft Game Class");
 
             MainDataDb.RunQuery(
-                "UPDATE knockout SET name = @param2, status = @param3, owner = @param4, channel = @param5 WHERE ID = @param1",
+                "UPDATE draftgames SET channel = @param2, owner = @param3, status = @param4, title = @param5, description = @param6, starttime = @param7, days = @param8 WHERE ID = @param1",
                 UpdateParameters);
         }
 
         private void Insert()
         {
             MainDataDb.RunQuery(
-                "INSERT INTO knockout (name, status, owner, channel) VALUES (@param1, @param2, @param3, @param4)",
+                "INSERT INTO draftgames (channel, owner, status, title, description, starttime, days) VALUES (@param1, @param2, @param3, @param4, @param5, @param6, @param7)",
                 InsertParameters);
 
             var dataResults = MainDataDb.GetData(
-                "SELECT id FROM knockout WHERE name = @param1 AND status = @param2 AND owner = @param3 AND channel = @param4",
+                "SELECT id FROM draftgames WHERE channel = @param1 AND owner = @param2 AND status = @param3 AND title = @param4 AND description = @param5 AND starttime = @param6 AND days = @param7",
                 InsertParameters);
 
             Id = (long)dataResults.First()["id"];
@@ -134,9 +173,9 @@ namespace LongJohnSilver.Database.DataMethodsDrafts
 
         public void Delete()
         {
-            if (Id == -1) throw new InvalidOperationException("Attempted to Delete An Empty Knockout Game Class");
+            if (Id == -1) throw new InvalidOperationException("Attempted to Delete An Empty Draft Game Class");
 
-            MainDataDb.RunQuery("DELETE FROM knockout WHERE id = @param1", IdParameters);
+            MainDataDb.RunQuery("DELETE FROM draftgames WHERE id = @param1", IdParameters);
         }
     }
 }
