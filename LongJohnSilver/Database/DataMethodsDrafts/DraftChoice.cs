@@ -7,7 +7,7 @@ using System.Text;
 
 namespace LongJohnSilver.Database.DataMethodsDrafts
 {
-    class DraftChoice
+    public class DraftChoice
     {
         private string _channel;
         private string _playerId;
