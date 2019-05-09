@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Discord.Commands;
 using LongJohnSilver.Database.DataMethodsDrafts;
 using LongJohnSilver.Enums;
+using LongJohnSilver.Extensions;
 using LongJohnSilver.Statics;
 
 namespace LongJohnSilver.Commands.Draft
@@ -16,7 +17,7 @@ namespace LongJohnSilver.Commands.Draft
         {
             var dModel = new DraftModel(Context.Channel.Id);
 
-            if (!StateChecker.IsDraftChannel(Context) || StateChecker.IsPrivateMessage(Context))
+            if (!Context.IsDraftChannel() || Context.IsPrivate)
             {
                 return;
             }

@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Discord.Commands;
 using Discord.WebSocket;
 using LongJohnSilver.Database;
+using LongJohnSilver.Extensions;
 using LongJohnSilver.Statics;
 
 namespace LongJohnSilver.Commands.Admin
@@ -17,13 +18,13 @@ namespace LongJohnSilver.Commands.Admin
         [Command("showchannelroles")]
         public async Task ShowChannelRolesAsync()
         {
-            if (!StateChecker.IsGuildAdmin(Context))
+            if (!Context.IsGuildAdmin())
             {
                 await Context.Channel.SendMessageAsync(":x: You are not guild admin!");
                 return;
             }
 
-            if (StateChecker.IsPrivateMessage(Context))
+            if (Context.IsPrivate)
             {
                 await Context.Channel.SendMessageAsync(
                     ":x: Please use this command in the guild you wish to see the roles for");

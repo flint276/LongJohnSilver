@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using LongJohnSilver.Enums;
+using LongJohnSilver.Extensions;
 
 namespace LongJohnSilver.Commands.Draft
 {
@@ -16,7 +17,7 @@ namespace LongJohnSilver.Commands.Draft
         {
             var dModel = new DraftModel(Context.Channel.Id);
 
-            if (!StateChecker.IsDraftChannel(Context) || StateChecker.IsPrivateMessage(Context))
+            if (!Context.IsDraftChannel() || Context.IsPrivate)
             {
                 return;
             }

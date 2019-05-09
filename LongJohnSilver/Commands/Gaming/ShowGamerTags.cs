@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using LongJohnSilver.Embeds;
+using LongJohnSilver.Extensions;
 
 namespace LongJohnSilver.Commands.Gaming
 {
@@ -17,7 +18,7 @@ namespace LongJohnSilver.Commands.Gaming
         {
             var gModel = GamingModel.ForGuild(Context.Guild.Id);
 
-            if (!StateChecker.IsGamingChannel(Context) || StateChecker.IsPrivateMessage(Context))
+            if (!Context.IsGamingChannel() || Context.IsPrivate)
             {
                 return;
             }

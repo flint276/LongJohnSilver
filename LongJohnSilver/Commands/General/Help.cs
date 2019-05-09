@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Discord.Commands;
+using LongJohnSilver.Extensions;
 using LongJohnSilver.Statics;
 
 namespace LongJohnSilver.Commands.General
@@ -9,7 +10,7 @@ namespace LongJohnSilver.Commands.General
         [Command("help")]
         public async Task HelpAsync()
         {
-            if (StateChecker.IsKnockoutChannel(Context))
+            if (Context.IsKnockoutChannel())
             {
                 await Context.Channel.SendMessageAsync(
                     "**!createknockout** - Creates a new knockout, instructions follow in a private message.\n" +
@@ -25,7 +26,7 @@ namespace LongJohnSilver.Commands.General
                 return;
             }
 
-            if (StateChecker.IsGeneralChannel(Context))
+            if (Context.IsGeneralChannel())
             {
                 await Context.Channel.SendMessageAsync(
                     "**!ver** - Show the latest version of the bot.\n" +
@@ -35,7 +36,7 @@ namespace LongJohnSilver.Commands.General
                 return;
             }
 
-            if (StateChecker.IsGamingChannel(Context))
+            if (Context.IsGamingChannel())
             {
                 await Context.Channel.SendMessageAsync(
                     "**!showgamertags** *<username>* or *<service>* - Show the gamertags for a user or all gamertags for a service.\n" +

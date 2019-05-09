@@ -15,7 +15,7 @@ namespace LongJohnSilver.Commands.Knockout.Creation
         {
             var kModel = KnockoutModel.ForUser(Context.User.Id);
 
-            if (!StateChecker.IsPrivateMessage(Context))
+            if (!Context.IsPrivate)
             {
                 return;
             }

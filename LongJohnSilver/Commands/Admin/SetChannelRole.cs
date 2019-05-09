@@ -4,6 +4,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Discord.Commands;
 using LongJohnSilver.Database;
+using LongJohnSilver.Extensions;
 using LongJohnSilver.Statics;
 
 namespace LongJohnSilver.Commands.Admin
@@ -13,14 +14,14 @@ namespace LongJohnSilver.Commands.Admin
         // ReSharper disable once StringLiteralTypo
         [Command("setchannelrole")]
         public async Task SetChannelRoleAsync([Remainder]string input = "")
-        {
-            if (!StateChecker.IsGuildAdmin(Context))
+        {            
+            if (!Context.IsGuildAdmin())
             {
                 await Context.Channel.SendMessageAsync(":x: You are not guild admin!");
                 return;
             }
-
-            if (StateChecker.IsPrivateMessage(Context))
+            
+            if (Context.IsPrivate)
             {
                 await Context.Channel.SendMessageAsync(
                     ":x: Please use this command in the channel you wish to set the role for");

@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Discord.Commands;
 using LongJohnSilver.Enums;
 using LongJohnSilver.Database.DataMethodsKnockout;
+using LongJohnSilver.Extensions;
 using LongJohnSilver.Statics;
 
 namespace LongJohnSilver.Commands.Knockout 
@@ -15,12 +16,12 @@ namespace LongJohnSilver.Commands.Knockout
         {
             var kModel = KnockoutModel.ForChannel(Context.Channel.Id);
 
-            if (!StateChecker.IsKnockoutChannel(Context) || StateChecker.IsPrivateMessage(Context))
+            if (!Context.IsKnockoutChannel() || Context.IsPrivate)
             {
                 return;
             }
 
-            if (!(StateChecker.IsChannelOp(Context)))
+            if (!Context.IsChannelOp())
             {
                 await Context.Channel.SendMessageAsync(":x: You are not a bot moderator!");
                 return;

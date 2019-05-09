@@ -5,6 +5,7 @@ using Discord.WebSocket;
 using LongJohnSilver.Embeds;
 using LongJohnSilver.Enums;
 using LongJohnSilver.Database.DataMethodsKnockout;
+using LongJohnSilver.Extensions;
 using LongJohnSilver.Statics;
 
 namespace LongJohnSilver.Commands.Knockout
@@ -16,7 +17,7 @@ namespace LongJohnSilver.Commands.Knockout
         {
             var kModel = KnockoutModel.ForChannel(Context.Channel.Id);
 
-            if (!StateChecker.IsKnockoutChannel(Context))
+            if (!Context.IsKnockoutChannel())
             {
                 return;
             }
