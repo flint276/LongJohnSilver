@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using LongJohnSilver.Database;
-using LongJohnSilver.Interfaces;
 using LongJohnSilver.Statics;
 
 namespace LongJohnSilver.Database.DataMethodsKnockout

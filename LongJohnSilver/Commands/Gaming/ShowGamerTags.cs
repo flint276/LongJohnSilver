@@ -51,7 +51,7 @@ namespace LongJohnSilver.Commands.Gaming
                     }
                 }
 
-                var username = Context.Client.GetUser(userId).Username;
+                var username = Context.Client.GetUser(userId)?.Username;
                 username = Context.Guild.GetUser(userId)?.Nickname ?? username;
 
                 var embed = GamerTagEmbeds.GamerTagEmbed($"Gamertags for {username}", body);
@@ -67,7 +67,13 @@ namespace LongJohnSilver.Commands.Gaming
 
                 foreach (var kvp in userArray)
                 {
-                    var username = Context.Client.GetUser(kvp.Key).Username;
+                    var username = Context.Client.GetUser(kvp.Key)?.Username;
+
+                    if (username == null)
+                    {
+                        continue;
+                    }
+
                     username = Context.Guild.GetUser(kvp.Key)?.Nickname ?? username;
 
                     if (kvp.Value.Contains("__"))

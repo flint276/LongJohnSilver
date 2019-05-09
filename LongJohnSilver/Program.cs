@@ -25,7 +25,7 @@ namespace LongJohnSilver
         private IServiceProvider _services;
         private DiscordSocketConfig _config;
 
-        private static System.Timers.Timer _botTimer;
+        //private static System.Timers.Timer _botTimer;
 
         
 
@@ -118,6 +118,7 @@ namespace LongJohnSilver
 
         }
 
+        /*
         private static async Task OnTimedEvent(object source, System.Timers.ElapsedEventArgs e, DiscordSocketClient _client)
         {
             Console.WriteLine("Starting!");            
@@ -134,6 +135,7 @@ namespace LongJohnSilver
 
             await Task.Delay(-1);
         }
+        */
 
         private static void Setup()
         {

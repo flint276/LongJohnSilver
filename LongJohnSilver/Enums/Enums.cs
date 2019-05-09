@@ -11,4 +11,13 @@ namespace LongJohnSilver.Enums
         KnockoutFinished = 3,
         KnockoutUnderConstruction = 4
     }
+
+    public enum DraftStatus
+    {
+        NoDraft = 1,
+        DraftInConstruction = 2,
+        DraftInProgress = 3,
+        DraftVoting = 4,
+        DraftFinished = 5,
+    }
 }

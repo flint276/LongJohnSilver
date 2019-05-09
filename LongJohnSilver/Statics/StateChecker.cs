@@ -54,5 +54,11 @@ namespace LongJohnSilver.Statics
             var roleHandler = new RoleHandler(Factory.GetDatabase());
             return roleHandler.GetRoleForChannel(context.Channel.Id) == "general";
         }
+
+        public static bool IsDraftChannel(SocketCommandContext context)
+        {
+            var roleHandler = new RoleHandler(Factory.GetDatabase());
+            return roleHandler.GetRoleForChannel(context.Channel.Id) == "draft";
+        }
     }
 }

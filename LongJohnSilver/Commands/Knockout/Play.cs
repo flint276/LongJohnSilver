@@ -16,7 +16,7 @@ namespace LongJohnSilver.Commands.Knockout
         [Command("vote")]
         public async Task PlayAsync([Remainder]string input = "")
         {
-            var kModel = KnockoutModel.ForChannel(Context.Channel.Id);
+            var kModel = KnockoutModel.ForChannel(Context.Channel.Id);            
 
             if (!StateChecker.IsKnockoutChannel(Context) || StateChecker.IsPrivateMessage(Context))
             {

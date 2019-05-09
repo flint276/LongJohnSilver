@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using LongJohnSilver.Database;
 
-namespace LongJohnSilver.Interfaces
+namespace LongJohnSilver.FlintDatabaseToolkit
 {
-    public interface IDatabase
+    public interface IFlintDatabase
     {
         void CleanRoleFromChannel(string channelId);
         void CreateDatabase();

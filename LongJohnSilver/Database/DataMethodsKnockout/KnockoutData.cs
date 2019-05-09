@@ -6,7 +6,6 @@ using System.Text;
 using Discord.Audio.Streams;
 using LongJohnSilver.Database;
 using LongJohnSilver.Statics;
-using LongJohnSilver.Interfaces;
 
 namespace LongJohnSilver.Database.DataMethodsKnockout
 {

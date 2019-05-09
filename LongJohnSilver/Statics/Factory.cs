@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Text;
 using LongJohnSilver.Database;
-using LongJohnSilver.Interfaces;
 
 namespace LongJohnSilver.Statics
 {

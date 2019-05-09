@@ -1,5 +1,6 @@
 ﻿using Discord.WebSocket;
 using LongJohnSilver.Database.DataMethodsKnockout;
+using LongJohnSilver.FlintTimeToolkit;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -26,13 +27,11 @@ namespace LongJohnSilver.Statics
         }
 
         public static void KnockoutNewDayTimerInit()
-        {            
-            var secondsTillHourIsUp = (60 - (DateTime.Now.Minute)) * 60;
-
-            KnockoutNewDayTimer = new System.Timers.Timer(secondsTillHourIsUp * 1000);
+        {                        
+            KnockoutNewDayTimer = new System.Timers.Timer(SecondsTill.HourIsUp * 1000);            
 
             KnockoutNewDayTimer.Elapsed += async (sender, e) => await KnockoutNewDayEvent(sender, e);
-            KnockoutNewDayTimer.Elapsed += (sender, e) => KnockoutNewDayTimer.Interval = 3600000;
+            KnockoutNewDayTimer.Elapsed += (sender, e) => KnockoutNewDayTimer.Interval = SecondsTill.HourIsUp * 1000;
 
             KnockoutNewDayTimer.AutoReset = true;
             KnockoutNewDayTimer.Enabled = true;
@@ -46,12 +45,11 @@ namespace LongJohnSilver.Statics
 
             foreach (var c in channelsToNotify)
             {
-                var discordChannel = (ISocketMessageChannel)Client.GetChannel(c);
-                await discordChannel.SendMessageAsync("It is a glorious new hour. Everyone's turns are reset!");
-
+                var discordChannel = (ISocketMessageChannel)Client.GetChannel(c);                
                 var kModel = KnockoutModel.ForChannel(c);
                 if (kModel.KnockoutStatus == KnockoutStatus.KnockoutInProgress)
                 {
+                    await discordChannel.SendMessageAsync("It is a glorious new hour. Everyone's turns are reset!");
                     kModel.NewDay();
                 }                
             }

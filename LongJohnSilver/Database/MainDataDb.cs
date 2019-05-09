@@ -5,7 +5,6 @@ using System.Data.SQLite;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using LongJohnSilver.Interfaces;
 using NUnit.Framework;
 
 namespace LongJohnSilver.Database
@@ -19,7 +18,7 @@ namespace LongJohnSilver.Database
         public string DbLocation = $@"{CurrentDirectory}{Path.DirectorySeparatorChar}Data{Path.DirectorySeparatorChar}";
         public string DbPath;
         public string DbSource;
-        public int CurrentVersion = 8;
+        public int CurrentVersion = 9;
 
         /// <summary>
         /// Constructor, creates database if not present
@@ -337,7 +336,7 @@ namespace LongJohnSilver.Database
             RunUnsafeQuery($"ALTER TABLE draftgames ADD owner VARCHAR(50)");
             RunUnsafeQuery($"ALTER TABLE draftgames ADD status INT");
             RunUnsafeQuery($"ALTER TABLE draftgames ADD title VARCHAR(200)");
-            RunUnsafeQuery($"ALTER TALBE draftgames ADD description VARCHAR(1000)");
+            RunUnsafeQuery($"ALTER TABLE draftgames ADD description VARCHAR(1000)");
             RunUnsafeQuery($"ALTER TABLE draftgames ADD starttime INT");
             RunUnsafeQuery($"ALTER TABLE draftgames ADD days INT");
 

@@ -1,5 +1,4 @@
-﻿using LongJohnSilver.Interfaces;
-using LongJohnSilver.Statics;
+﻿using LongJohnSilver.Statics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -118,7 +117,7 @@ namespace LongJohnSilver.Database.DataMethodsDrafts
             _description = description;
             _startTime = startTime;
             _days = days;
-            Update();
+            Insert();
         }
 
         public DraftGame()
