@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using LongJohnSilver.Embeds;
+using LongJohnSilver.Enums;
 using LongJohnSilver.Extensions;
 
 namespace LongJohnSilver.Commands.Gaming
@@ -18,7 +19,7 @@ namespace LongJohnSilver.Commands.Gaming
         {
             var gModel = GamingModel.ForGuild(Context.Guild.Id);
 
-            if (!Context.IsGamingChannel() || Context.IsPrivate)
+            if (Context.Channel.Role() != ChannelRoles.Gaming || Context.IsPrivate)
             {
                 return;
             }

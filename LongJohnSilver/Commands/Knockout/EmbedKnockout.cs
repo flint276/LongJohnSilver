@@ -16,7 +16,7 @@ namespace LongJohnSilver.Commands.Knockout
         {
             var kModel = KnockoutModel.ForChannel(Context.Channel.Id);
 
-            if (!Context.IsKnockoutChannel() || Context.IsPrivate)
+            if (Context.Channel.Role() != ChannelRoles.Knockout || Context.IsPrivate)
             {
                 return;
             }

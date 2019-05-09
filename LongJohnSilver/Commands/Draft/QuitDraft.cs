@@ -17,7 +17,7 @@ namespace LongJohnSilver.Commands.Draft
         {
             var dModel = new DraftModel(Context.Channel.Id);
 
-            if (!Context.IsDraftChannel() || Context.IsPrivate)
+            if (Context.Channel.Role() != ChannelRoles.Draft || Context.IsPrivate)
             {
                 return;
             }

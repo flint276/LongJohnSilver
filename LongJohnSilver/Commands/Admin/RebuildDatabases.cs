@@ -2,6 +2,7 @@
 using Discord.Commands;
 using Discord.WebSocket;
 using LongJohnSilver.Database.DataMethodsKnockout;
+using LongJohnSilver.Enums;
 using LongJohnSilver.Extensions;
 using LongJohnSilver.Statics;
 
@@ -14,7 +15,7 @@ namespace LongJohnSilver.Commands.Admin
         {
             var kModel = KnockoutModel.ForChannel(Context.Channel.Id);
 
-            if (!Context.IsKnockoutChannel() || Context.IsPrivate)
+            if (Context.Channel.Role() != ChannelRoles.Knockout || Context.IsPrivate)
             {
                 return;
             }

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using LongJohnSilver.Database.DataMethodsGaming;
+using LongJohnSilver.Enums;
 using LongJohnSilver.Extensions;
 using LongJohnSilver.Statics;
 
@@ -17,7 +18,7 @@ namespace LongJohnSilver.Commands.Gaming
         {
             var gModel = GamingModel.ForGuild(Context.Guild.Id);
 
-            if (!Context.IsGamingChannel() || Context.IsPrivate)
+            if (Context.Channel.Role() != ChannelRoles.Gaming || Context.IsPrivate)
             {
                 return;
             }

@@ -20,4 +20,12 @@ namespace LongJohnSilver.Enums
         DraftVoting = 4,
         DraftFinished = 5,
     }
+
+    public enum ChannelRoles
+    {
+        Draft,
+        Gaming,
+        General,
+        Knockout,        
+    }
 }

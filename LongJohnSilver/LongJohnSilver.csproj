@@ -6,6 +6,7 @@
     <PackageIconUrl></PackageIconUrl>
     <ApplicationIcon></ApplicationIcon>
     <Configurations>Debug;Release;Aigaion</Configurations>
+    <LangVersion>7.1</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
